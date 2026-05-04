@@ -1,0 +1,11 @@
+import { AvenxApp } from './runtime.js';
+import Source from './components/Source.axt';
+import Display from './components/Display.axt';
+
+const app = new AvenxApp({ target: '#app' });
+
+app.register('Source', Source);
+app.register('Display', Display);
+
+app.mount('Source', '#source');
+app.mount('Display', '#display');

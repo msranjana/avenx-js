@@ -9,7 +9,7 @@
 
     <h1 @click="count = 0">
         <@css title />
-        Hoe-JS @css PoC
+        Avenx-JS @css PoC
     </h1>
     
     <div>

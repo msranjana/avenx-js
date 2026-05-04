@@ -1,5 +1,5 @@
 // src/runtime.js
-export class TTHComponent {
+export class AvenxComponent {
     constructor(initialState = {}, bridges = {}) {
         this.element = null;
         this._template = '';
@@ -26,7 +26,7 @@ export class TTHComponent {
         try {
             const fn = new Function(...Object.keys(context), `with(this) { ${code} }`);
             fn.call(this.state, ...Object.values(context));
-        } catch (e) { console.error("TTH Exec Error:", e); }
+        } catch (e) { console.error("Avenx Exec Error:", e); }
     }
 
     render() {
@@ -37,7 +37,7 @@ export class TTHComponent {
             try {
                 return new Function(...Object.keys(context), `return ${expr}`).call(this.state, ...Object.values(context));
             } catch (e) { 
-                console.warn("TTH Render Warning:", e, "Expression:", expr);
+                console.warn("Avenx Render Warning:", e, "Expression:", expr);
                 return ''; 
             }
         });
@@ -69,7 +69,7 @@ export class TTHComponent {
     }
 }
 
-export class HoeApp {
+export class AvenxApp {
     constructor(config) {
         this.target = document.querySelector(config.target);
         this.components = new Map();

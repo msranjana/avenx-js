@@ -1,5 +1,5 @@
 // src/runtime.js
-class TTHComponent {
+class AvenxComponent {
     constructor(initialState = {}, bridges = {}) {
         this.element = null;
         this._template = '';
@@ -26,7 +26,7 @@ class TTHComponent {
         try {
             const fn = new Function(...Object.keys(context), `with(this) { ${code} }`);
             fn.call(this.state, ...Object.values(context));
-        } catch (e) { console.error("TTH Exec Error:", e); }
+        } catch (e) { console.error("Avenx Exec Error:", e); }
     }
 
     render() {
@@ -37,7 +37,7 @@ class TTHComponent {
             try {
                 return new Function(...Object.keys(context), `return ${expr}`).call(this.state, ...Object.values(context));
             } catch (e) { 
-                console.warn("TTH Render Warning:", e, "Expression:", expr);
+                console.warn("Avenx Render Warning:", e, "Expression:", expr);
                 return ''; 
             }
         });
@@ -69,7 +69,7 @@ class TTHComponent {
     }
 }
 
-class HoeApp {
+class AvenxApp {
     constructor(config) {
         this.target = document.querySelector(config.target);
         this.components = new Map();
@@ -108,23 +108,23 @@ class HoeApp {
     }
 }
 
-class Counter extends TTHComponent {
+class Counter extends AvenxComponent {
     constructor(bridges) {
         super({"count":0,"step":1}, bridges);
-        this._template = `<div class="hoe-ad441ce7">
+        this._template = `<div class="avenx-28ab74ec">
     
 
-    <h1 @click="count = 0" class="hoe-be13fe90">
+    <h1 @click="count = 0" class="avenx-663e4c76">
         
-        Hoe-JS @css PoC
+        Avenx-JS @css PoC
     </h1>
     
-    <div class="hoe-1a055ca6">
+    <div class="avenx-08801531">
         
         {{ count }}
     </div>
 
-    <button @click="count += step; log()" class="hoe-07aa498a">
+    <button @click="count += step; log()" class="avenx-a36cbdbf">
         
         Erhöhen (+{{ step }})
     </button>
@@ -132,7 +132,7 @@ class Counter extends TTHComponent {
         this.methods = { log: function() { console.log("Neuer Stand:", count); } };
     }
 }
-class Display extends TTHComponent {
+class Display extends AvenxComponent {
     constructor(bridges) {
         super({}, bridges);
         this._template = `<div>
@@ -142,7 +142,7 @@ class Display extends TTHComponent {
         this.methods = {  };
     }
 }
-class Source extends TTHComponent {
+class Source extends AvenxComponent {
     constructor(bridges) {
         super({}, bridges);
         this._template = `<div>
@@ -157,7 +157,7 @@ class Source extends TTHComponent {
 
 
 
-const app = new HoeApp({ target: '#app' });
+const app = new AvenxApp({ target: '#app' });
 app.registerBridge('CounterBridge', {
     count: 0
 });
