@@ -5,75 +5,98 @@ A lightweight, reactive JavaScript framework Proof-of-Concept featuring **Zero-C
 ## Features
 
 - **Reactivity**: Uses JavaScript Proxies to automatically re-render components when state changes.
-- **AXT Templates**: Components are defined in `.axt` files with `<state />`, `<action />`, and standard HTML.
-- **AXD Styling**: Styles are outsourced to `.axd` files. Use the `<@css />` marker in your template to automatically assign a unique hash-class to the preceding HTML element.
-- **Bridges**: Shared reactive states stored in `src/bridges/*.js`. They allow passing values between any components.
+- **Unified Components**: Components are defined using a combination of HTML-like tags and JavaScript logic within `.component.js` files.
+- **Scoped Styling**: Styles are defined in `.component.css` files. Use the `<@css />` marker in your template to automatically assign unique hash-classes to your elements.
+- **Bridges**: Shared reactive states stored in `src/global/*.bridge.js`. They allow passing values between any components seamlessly.
+- **CLI Tooling**: A powerful CLI to initialize projects, generate components, and manage the build process.
 
-## File Structure
+## Installation
 
-- `src/components/Name.axt`: The structure and logic of your component.
-- `src/components/Name.axd`: The styles for your component.
-- `src/bridges/Name.js`: Shared state definitions.
-- `src/main.avx`: The entry point of your application.
-- `src/runtime.js`: The core framework logic.
+To use Avenx-JS in your project, install it via npm:
 
-## Bridges (Shared State)
-
-Bridges allow you to share state between components that are not directly related.
-
-### 1. Define a Bridge (`src/bridges/CounterBridge.js`)
-```javascript
-export default {
-    count: 0
-}
+```bash
+npm install avenx-js
 ```
 
-### 2. Use it in any Component
-No import or registration required within the template. Just use the bridge name.
+## CLI Usage
 
-```html
-<!-- Source component -->
-<button @click="CounterBridge.count++">Increment</button>
+Avenx-JS comes with a CLI to streamline development. You can run it using `npx avenx`:
 
-<!-- Display component -->
-<p>Count is {{ CounterBridge.count }}</p>
-```
+- **Initialize a project**: `npx avenx init`
+- **Generate a component**: `npx avenx g <name>`
+- **Build the project**: `npx avenx build`
+- **Start dev server**: `npx avenx serve [port]`
 
-## How to Build
-...
+## Core Concepts
 
-1. **Prerequisites**: Ensure you have [Node.js](https://nodejs.org/) installed.
-2. **Compile**: Run the compiler script from the root directory:
-   ```bash
-   node Avenx.js
-   ```
-3. **Output**: The compiler will generate:
-   - `dist/bundle.js`: Contains the runtime, compiled components, and app logic.
-   - `dist/bundle.css`: Contains all scoped styles extracted from your `.axd` files.
+### 1. Components (`.component.js`)
+Components contain your template, state, and logic.
 
-## Usage Example
-
-### 1. Define Styles (`Counter.axd`)
-```css
-@css {
-    color: #333;
-    &:hover { color: #ff3e00; }
-}
-```
-
-### 2. Define Template (`Counter.axt`)
 ```html
 <state count="0" />
-<h1 @click="count++">
+
+<action name="increment">
+    this.state.count++;
+</action>
+
+<h1 @click="increment">
     <@css />
     Count is {{ count }}
 </h1>
 ```
 
-### 3. Run and View
-Open your `index.html` (which should link to `dist/bundle.js` and `dist/bundle.css`) in a browser.
+### 2. Styling (`.component.css`)
+Styles are scoped using the `<@css>` block. You can also define global variables using `<@global>`.
 
-### 4. Create docs
-```cmd
-jsdoc -r . -d docs
+```css
+<@global>
+    @def primary-color #ff3e00;
+</@global>
+
+<@css>
+    h1 {
+        color: var(--primary-color);
+        cursor: pointer;
+        &:hover { opacity: 0.8; }
+    }
+</@css>
 ```
+
+### 3. Bridges (Shared State)
+Bridges are files in `src/global/*.bridge.js` that export a default object. They are automatically available in all components.
+
+**Definition (`src/global/Auth.bridge.js`):**
+```javascript
+export default {
+    isLoggedIn: false,
+    username: ''
+}
+```
+
+**Usage in a component:**
+```html
+<p>User: {{ AuthBridge.username }}</p>
+```
+
+## Getting Started
+
+1. **Scaffold a new project**:
+   ```bash
+   mkdir my-app && cd my-app
+   npx avenx init
+   ```
+
+2. **Start the development server**:
+   ```bash
+   npx avenx serve
+   ```
+   This will build your project and start a server at `http://localhost:3000` with hot-reloading.
+
+3. **Build for production**:
+   ```bash
+   npx avenx build
+   ```
+   The compiled assets will be located in the `dist/` directory.
+
+## License
+MIT

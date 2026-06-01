@@ -3,9 +3,20 @@
   "version": "1.0.0",
   "description": "A lightweight reactive framework with scoped CSS and custom components.",
   "main": "lib/compiler.js",
+  "exports": {
+    ".": "./lib/compiler.js",
+    "./runtime": "./lib/runtime/index.js"
+  },
   "bin": {
     "avenx": "bin/avenx.js"
   },
+  "files": [
+    "bin/",
+    "lib/",
+    "templates/",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -16,6 +27,14 @@
     "css-in-js",
     "scoped-css"
   ],
-  "author": "",
-  "license": "MIT"
+  "author": "Avenx Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/avenx-js/avenx-js"
+  },
+  "bugs": {
+    "url": "https://github.com/avenx-js/avenx-js/issues"
+  },
+  "homepage": "https://avenx-js.com/"
 }
