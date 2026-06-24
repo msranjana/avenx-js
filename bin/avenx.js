@@ -95,7 +95,7 @@ class AvenxCLI {
         // Create initial main.app.js
         const mainAppPath = path.join(this.baseDir, 'src/main.app.js');
         if (!fs.existsSync(mainAppPath)) {
-            fs.writeFileSync(mainAppPath, "import { AvenxApp } from 'avenx-js/runtime';\n\nconst app = new AvenxApp({ target: '#app' });\n");
+            fs.writeFileSync(mainAppPath, "import { AvenxApp } from 'avenx-core/runtime';\n\nconst app = new AvenxApp({ target: '#app' });\n");
             console.log('  Created: src/main.app.js');
         }
 
