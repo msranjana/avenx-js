@@ -93,8 +93,47 @@ try {
     assert.strictEqual(blocks2['container'], 'padding: 10px;');
 
     console.log('  ✅ Style block matching tests passed!');
+
+    console.log('🧪 Testing support for self-closing and non-self-closing component tags...');
+    // Test 1: Self-closing tag
+    assert.strictEqual(
+        cp.processComponentTags('<MyComponent />'),
+        '<div data-avenx-comp="MyComponent"></div>'
+    );
+    // Test 2: Non-self-closing empty tag
+    assert.strictEqual(
+        cp.processComponentTags('<MyComponent></MyComponent>'),
+        '<div data-avenx-comp="MyComponent"></div>'
+    );
+    // Test 3: Non-self-closing tag with text content
+    assert.strictEqual(
+        cp.processComponentTags('<MyComponent>Hello</MyComponent>'),
+        '<div data-avenx-comp="MyComponent">Hello</div>'
+    );
+    // Test 4: Non-self-closing tag with attributes
+    assert.strictEqual(
+        cp.processComponentTags('<MyComponent title="Test" active=\'true\'></MyComponent>'),
+        '<div data-avenx-comp="MyComponent" data-props-title="\'Test\'" data-props-active="true"></div>'
+    );
+    // Test 5: Tag with spaces in closing tag
+    assert.strictEqual(
+        cp.processComponentTags('<MyComponent></ MyComponent >'),
+        '<div data-avenx-comp="MyComponent"></div>'
+    );
+    // Test 6: Nested components
+    assert.strictEqual(
+        cp.processComponentTags('<MyComponent><ChildComponent /></MyComponent>'),
+        '<div data-avenx-comp="MyComponent"><div data-avenx-comp="ChildComponent"></div></div>'
+    );
+    // Test 7: Multiple components sequentially
+    assert.strictEqual(
+        cp.processComponentTags('<MyComponent></MyComponent> <AnotherComponent />'),
+        '<div data-avenx-comp="MyComponent"></div> <div data-avenx-comp="AnotherComponent"></div>'
+    );
+    console.log('  ✅ Self-closing and non-self-closing component tags tests passed!');
 } catch (error) {
     console.error('❌ ComponentParser tests failed!');
     console.error(error);
     process.exit(1);
 }
+
