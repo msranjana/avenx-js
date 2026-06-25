@@ -9,17 +9,17 @@ const { AvenxPage } = require('../../lib/core/runtime/AvenxPage');
         console.log('🧪 Testing Router and Guards...');
 
         // Setup mock elements and global object mocks
-        const mockElement = { 
+        const mockElement = {
             innerHTML: '',
             querySelector: () => null,
             querySelectorAll: () => [],
             attributes: [],
             hasAttribute: () => false,
-            setAttribute: () => {},
-            removeAttribute: () => {},
-            appendChild: () => {},
-            removeChild: () => {},
-            replaceWith: () => {},
+            setAttribute: () => { },
+            removeAttribute: () => { },
+            appendChild: () => { },
+            removeChild: () => { },
+            replaceWith: () => { },
             childNodes: []
         };
 
@@ -106,7 +106,7 @@ const { AvenxPage } = require('../../lib/core/runtime/AvenxPage');
         redirectTarget = null;
         window.location.hash = '#/user/42?ref=test';
         await new Promise(resolve => setTimeout(resolve, 0));
-        
+
         assert.strictEqual(guardCalled, true, 'Guard should have been called');
         assert.strictEqual(mountedPageName, 'TestPage');
         assert.strictEqual(mountedParams.userId, '42', 'Should parse userId parameter');
@@ -122,7 +122,7 @@ const { AvenxPage } = require('../../lib/core/runtime/AvenxPage');
         const prevHash = window.location.hash; // '#/user/42?ref=test'
         window.location.hash = '#/user/99';
         await new Promise(resolve => setTimeout(resolve, 0));
-        
+
         assert.strictEqual(guardCalled, true, 'Guard should have been called');
         assert.strictEqual(mountedPageName, null, 'Page should not be mounted when transition is denied');
         assert.strictEqual(window.location.hash, prevHash, 'Hash should revert to previous value');
@@ -141,6 +141,23 @@ const { AvenxPage } = require('../../lib/core/runtime/AvenxPage');
         assert.strictEqual(guardCalled, true, 'Guard should have been called');
         assert.strictEqual(window.location.hash, '#/', 'Hash should be redirected to redirect target');
         assert.strictEqual(mountedPageName, 'TestPage');
+
+        // 5. Duplicate page registration should warn
+        const originalWarn = console.warn;
+        let warningMessage = '';
+
+        console.warn = msg => {
+            warningMessage = msg;
+        };
+
+        app.registerPage('TestPage', TestPage);
+
+        assert.ok(
+            warningMessage.includes('already registered'),
+            'Expected duplicate page registration warning'
+        );
+
+        console.warn = originalWarn;
 
         console.log('  ✅ Router and Guards tests passed!');
     } catch (error) {
