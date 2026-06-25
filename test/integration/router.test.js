@@ -161,7 +161,52 @@ const { AvenxPage } = require('../../lib/core/runtime/AvenxPage');
         assert.strictEqual(window.location.hash, '#/', 'Hash should be redirected to redirect target');
         assert.strictEqual(mountedPageName, 'TestPage');
 
-        // 5. Duplicate page registration should warn
+        // Reset tracking
+        mountedPageName = null;
+        mountedParams = null;
+        guardCalled = false;
+
+        // 5. Secondary anchor should be ignored
+        allowTransition = true;
+        redirectTarget = null;
+
+        window.location.hash = '#/user/42#details';
+        await new Promise(resolve => setTimeout(resolve, 0));
+
+        assert.strictEqual(
+            mountedPageName,
+            'TestPage',
+            'Route should match even with secondary anchor'
+        );
+        assert.strictEqual(
+            mountedParams.userId,
+            '42',
+            'Should parse params while ignoring secondary anchor'
+        );
+
+        // Reset tracking
+        mountedPageName = null;
+        mountedParams = null;
+
+        // 6. Secondary anchor after query should be ignored
+        window.location.hash = '#/user/42?ref=test#specs';
+        await new Promise(resolve => setTimeout(resolve, 0));
+
+        assert.strictEqual(
+            mountedPageName,
+            'TestPage',
+            'Route with query and secondary anchor should match'
+        );
+        assert.strictEqual(
+            mountedParams.userId,
+            '42'
+        );
+        assert.deepStrictEqual(
+            mountedParams.query,
+            { ref: 'test' }
+        );
+
+        // 7. Duplicate page registration should warn
         const originalWarn = console.warn;
         let warningMessage = '';
 
