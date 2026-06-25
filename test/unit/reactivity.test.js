@@ -129,7 +129,7 @@ function testProxyUnwrapping() {
     console.log('  ✅ Proxy unwrapping tests passed!');
 }
 
-function testBridgeDeepReactivity() {
+async function testBridgeDeepReactivity() {
     console.log('🧪 Testing deep reactivity on global bridges...');
     
     const app = new AvenxApp({ target: '#app' });
@@ -157,10 +157,12 @@ function testBridgeDeepReactivity() {
     
     // Mutating nested property triggers app.updateAll()
     bridge.theme.colors.primary = 'red';
+    await new Promise(resolve => setTimeout(resolve, 0));
     assert.strictEqual(updateAllCount, 1);
     
     // Calling bridge method which mutates nested state triggers updateAll
     bridge.toggleTheme();
+    await new Promise(resolve => setTimeout(resolve, 0));
     assert.strictEqual(updateAllCount, 2);
     assert.strictEqual(bridge.theme.dark, false);
     
@@ -189,16 +191,18 @@ function testBuiltinsAreNotProxied() {
     console.log('  ✅ Built-ins are not proxied tests passed!');
 }
 
-try {
-    testIsReactiveTarget();
-    testStateDeepReactivity();
-    testReferentialIdentity();
-    testProxyUnwrapping();
-    testBridgeDeepReactivity();
-    testBuiltinsAreNotProxied();
-    console.log('✅ All reactivity tests passed!');
-} catch (error) {
-    console.error('❌ Reactivity tests failed!');
-    console.error(error);
-    process.exit(1);
-}
+(async () => {
+    try {
+        testIsReactiveTarget();
+        testStateDeepReactivity();
+        testReferentialIdentity();
+        testProxyUnwrapping();
+        await testBridgeDeepReactivity();
+        testBuiltinsAreNotProxied();
+        console.log('✅ All reactivity tests passed!');
+    } catch (error) {
+        console.error('❌ Reactivity tests failed!');
+        console.error(error);
+        process.exit(1);
+    }
+})();

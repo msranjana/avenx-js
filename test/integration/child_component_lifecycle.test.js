@@ -352,6 +352,7 @@ global.Node = {
         
         // Mutate child component local state directly to verify it persists
         firstChildInstance.state.childVal = 'mutatedLocalState';
+        await new Promise(resolve => setTimeout(resolve, 0));
         assert.strictEqual(childUpdates, 1, 'Child state change should trigger update');
         
         // 2. Update Parent Page State (reusing child component)
