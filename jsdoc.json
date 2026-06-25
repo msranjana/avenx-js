@@ -1,11 +1,15 @@
 {
     "source": {
-        "include": ["lib", "bin", "README.md"],
+        "include": [
+            "lib",
+            "bin",
+            "README.md"
+        ],
         "includePattern": ".+\\.js(doc|x)?$",
         "excludePattern": "(^|\\/|\\\\)_"
     },
     "opts": {
-        "destination": "./docs",
+        "destination": "./dev-docs",
         "recurse": true,
         "readme": "README.md"
     },

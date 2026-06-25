@@ -5,7 +5,7 @@ showcase/
 bench-results/
 
 # documentation
-docs/
+dev-docs/
 coverage/
 issues.md
 
