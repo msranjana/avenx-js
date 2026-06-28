@@ -51,6 +51,23 @@ try {
     assert.ok(generatedCss.includes(`@supports (display: grid) {`), 'Should retain @supports query');
     assert.ok(generatedCss.includes(`.${hash} .grid { display: grid; }`), 'Should scope nested selectors inside @supports');
 
+    // Verify comments and braces inside quoted strings
+    const commentCurlyCss = `
+    /* comment { */
+    content: "}";
+    & sub {
+        /* nested comment } */
+        content: '{';
+    }
+    `;
+    const spCurly = new StyleProcessor();
+    const hashCurly = spCurly.getHash(commentCurlyCss, 'TestComponent');
+    spCurly.extractRules(commentCurlyCss, hashCurly);
+    const generatedCurlyCss = spCurly.scopedStyles;
+
+    assert.ok(generatedCurlyCss.includes(`.${hashCurly} { content: "}"; }`), 'Should scope and keep content with brace');
+    assert.ok(generatedCurlyCss.includes(`.${hashCurly} sub { content: '{'; }`), 'Should scope nested selectors and keep brace');
+
     // Verify mergeClassIntoTag edge cases
     const sp3 = new StyleProcessor();
     const tagDataClass = sp3.mergeClassIntoTag('div data-class="foo"', 'my-hash');

@@ -94,6 +94,28 @@ try {
 
     console.log('  ✅ Style block matching tests passed!');
 
+    console.log('🧪 Testing CSS block depth parsing with comments/string literals containing curly braces...');
+    const cssWithCurlyBraces = `
+    <@css>
+        container {
+            /* comment containing { and } braces */
+            content: "}";
+            color: red;
+        }
+        nested {
+            & sub {
+                /* block { */
+                content: '{';
+            }
+        }
+    </@css>
+    `;
+    const blocksCurly = {};
+    cp.extractStylesAndVars(cssWithCurlyBraces, blocksCurly);
+    assert.strictEqual(blocksCurly['container'], 'content: "}";\n            color: red;');
+    assert.strictEqual(blocksCurly['nested'], '& sub {\n                \n                content: \'{\';\n            }');
+    console.log('  ✅ CSS block depth parsing with comments/braces tests passed!');
+
     console.log('🧪 Testing support for self-closing and non-self-closing component tags...');
     // Test 1: Self-closing tag
     assert.strictEqual(
