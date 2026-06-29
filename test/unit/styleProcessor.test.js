@@ -82,6 +82,21 @@ try {
     const tagClassSingle = sp3.mergeClassIntoTag("div class='foo'", 'my-hash');
     assert.strictEqual(tagClassSingle, "div class='my-hash foo'", 'Should merge into existing class attribute (single quotes)');
 
+    // Verify specificity / rule ordering preservation
+    const orderedCss = `
+    color: red;
+    &:hover { color: blue; }
+    color: green;
+    `;
+    const spOrdered = new StyleProcessor();
+    const hashOrdered = spOrdered.getHash(orderedCss, 'TestComponent');
+    spOrdered.extractRules(orderedCss, hashOrdered);
+    const generatedOrderedCss = spOrdered.scopedStyles;
+
+    // Check exact order by comparing expected output format
+    const expectedOrderedOutput = `.${hashOrdered} { color: red; }\n.${hashOrdered}:hover { color: blue; }\n.${hashOrdered} { color: green; }\n`;
+    assert.strictEqual(generatedOrderedCss, expectedOrderedOutput, 'Should preserve exact ordering of base rules and nested rules');
+
     console.log('  ✅ StyleProcessor tests passed!');
 } catch (error) {
     console.error('❌ StyleProcessor tests failed!');
