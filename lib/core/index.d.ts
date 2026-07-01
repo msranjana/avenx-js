@@ -142,9 +142,23 @@ export class AvenxPage extends AvenxComponent {
     );
 }
 
+/**
+ * Configuration options for the AvenxRouter.
+ */
 export interface AvenxRouterOptions {
+    /**
+     * Optional path prefix for all routes (e.g. 'app').
+     */
     prefix?: string;
+
+    /**
+     * The time in milliseconds to wait before a route guard execution times out (default is 5000ms).
+     */
     guardTimeout?: number;
+
+    /**
+     * The target hash path to redirect to if a route guard times out (e.g. '#/').
+     */
     guardTimeoutRedirect?: string;
 }
 
