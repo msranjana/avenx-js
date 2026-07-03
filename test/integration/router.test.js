@@ -248,6 +248,163 @@ const { AvenxPage } = require('../../lib/core/runtime/AvenxPage');
 
     console.warn = originalWarn;
 
+    // 10. Guard Timeout (Custom 50ms)
+    class StallingGuard extends AvenxGuard {
+      canActivate() {
+        return new Promise(() => {}); // never resolves
+      }
+    }
+
+    if (app.router) {
+      app.router.destroy();
+    }
+
+    mountedPageName = null;
+    mountedParams = null;
+
+    app.initRouter(
+      {
+        '#/home': 'TestPage',
+        '#/stalling': {
+          page: 'TestPage',
+          guards: [StallingGuard],
+        },
+      },
+      {
+        guardTimeout: 50,
+      },
+    );
+
+    window.location.hash = '#/home';
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    assert.strictEqual(app.router.currentRoute.hash, '#/home');
+
+    // Reset tracking
+    mountedPageName = null;
+
+    const prevHashBeforeTimeout = window.location.hash;
+    let consoleErrorMsg = null;
+    const originalConsoleError = console.error;
+    console.error = (msg) => {
+      consoleErrorMsg = msg instanceof Error ? msg.message : String(msg);
+    };
+
+    window.location.hash = '#/stalling';
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    console.error = originalConsoleError;
+
+    assert.strictEqual(window.location.hash, prevHashBeforeTimeout, 'Hash should revert to previous value on timeout');
+    assert.strictEqual(app.router.currentRoute.hash, '#/home', 'Current route hash should revert to #/home');
+    assert.strictEqual(mountedPageName, null, 'Page should not be mounted on timeout');
+    assert.ok(consoleErrorMsg && consoleErrorMsg.includes('AVX_R14'), 'Should log a timeout error with code AVX_R14');
+
+    // 11. Guard Timeout Redirection
+    if (app.router) {
+      app.router.destroy();
+    }
+
+    mountedPageName = null;
+    mountedParams = null;
+
+    app.initRouter(
+      {
+        '#/stalling-redirect': {
+          page: 'TestPage',
+          guards: [StallingGuard],
+        },
+        '#/': 'TestPage',
+      },
+      {
+        guardTimeout: 50,
+        guardTimeoutRedirect: '#/',
+      },
+    );
+
+    let consoleErrorMsgRedirect = null;
+    const originalConsoleErrorRedirect = console.error;
+    console.error = (msg) => {
+      consoleErrorMsgRedirect = msg instanceof Error ? msg.message : String(msg);
+    };
+
+    window.location.hash = '#/stalling-redirect';
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    console.error = originalConsoleErrorRedirect;
+
+    assert.strictEqual(window.location.hash, '#/', 'Hash should be redirected to target redirect path on timeout');
+    assert.strictEqual(app.router.currentRoute.hash, '#/', 'Current route hash should be redirected to #/');
+    assert.ok(
+      consoleErrorMsgRedirect && consoleErrorMsgRedirect.includes('AVX_R14'),
+      'Should log a timeout error on redirect',
+    );
+
+    // 12. Default Guard Timeout (5000ms)
+    if (app.router) {
+      app.router.destroy();
+    }
+
+    mountedPageName = null;
+    mountedParams = null;
+
+    app.initRouter({
+      '#/home': 'TestPage',
+      '#/stalling-default': {
+        page: 'TestPage',
+        guards: [StallingGuard],
+      },
+    });
+
+    window.location.hash = '#/home';
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    assert.strictEqual(app.router.currentRoute.hash, '#/home');
+
+    // Reset tracking
+    mountedPageName = null;
+
+    const prevHashBeforeDefault = window.location.hash;
+
+    const originalSetTimeout = global.setTimeout;
+    let registeredTimeoutDelay = null;
+    let timeoutCallback = null;
+
+    global.setTimeout = (cb, delay) => {
+      registeredTimeoutDelay = delay;
+      timeoutCallback = cb;
+      return originalSetTimeout(() => {}, 0);
+    };
+
+    window.location.hash = '#/stalling-default';
+    await new Promise((resolve) => originalSetTimeout(resolve, 0));
+
+    global.setTimeout = originalSetTimeout;
+
+    assert.strictEqual(registeredTimeoutDelay, 5000, 'Default guard timeout should be 5000ms');
+    let consoleErrorMsg2 = null;
+    const originalConsoleError2 = console.error;
+    console.error = (msg) => {
+      consoleErrorMsg2 = msg instanceof Error ? msg.message : String(msg);
+    };
+
+    if (timeoutCallback) {
+      timeoutCallback();
+    }
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    console.error = originalConsoleError2;
+
+    assert.strictEqual(
+      window.location.hash,
+      prevHashBeforeDefault,
+      'Hash should revert to previous value on default timeout',
+    );
+    assert.strictEqual(app.router.currentRoute.hash, '#/home', 'Current route hash should revert to #/home');
+    assert.strictEqual(mountedPageName, null, 'Page should not be mounted on default timeout');
+    assert.ok(
+      consoleErrorMsg2 && consoleErrorMsg2.includes('AVX_R14'),
+      'Should log a default timeout error with code AVX_R14',
+    );
+
     console.log('  ✅ Router and Guards tests passed!');
   } catch (error) {
     console.error('❌ Router and Guards tests failed!');

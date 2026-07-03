@@ -27,7 +27,7 @@ function parseArgs() {
 function minifyCss(css) {
   return css
     .replace(/\/\*[\s\S]*?\*\//g, '') // remove comments
-    .replace(/\s+/g, ' ')             // collapse whitespace
+    .replace(/\s+/g, ' ') // collapse whitespace
     .replace(/\s*([{}:;])\s*/g, '$1') // remove whitespace around punctuation
     .trim();
 }
@@ -196,7 +196,9 @@ async function run() {
       fs.writeFileSync(path.resolve(markdown), mdReport, 'utf8');
 
       if (isOverThreshold) {
-        console.error(`❌ Error: Total bundle size (${formatBytes(totalMinified)}) exceeds configured threshold of ${thresholdKb} KB.`);
+        console.error(
+          `❌ Error: Total bundle size (${formatBytes(totalMinified)}) exceeds configured threshold of ${thresholdKb} KB.`,
+        );
         process.exit(1);
       } else {
         console.log('✅ Bundle size is within the threshold.');

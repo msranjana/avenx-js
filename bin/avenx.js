@@ -529,6 +529,9 @@ class AvenxCLI {
 <head>
     <title>My Avenx App</title>
     <link rel="stylesheet" href="${this.config.distDir}/bundle.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Avenx App</title>
+  <link rel="stylesheet" href="dist/bundle.css">
 </head>
 <body>
     <div id="app"></div>
