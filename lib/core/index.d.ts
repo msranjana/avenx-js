@@ -93,6 +93,18 @@ export class AvenxComponent {
     onUnmount?(): void;
 
     /**
+     * Programmatically registers a watcher on a reactive expression/function.
+     * @param getter Evaluation function returning value to watch.
+     * @param callback Triggers when the value changes.
+     * @param options Config options.
+     */
+    watch(
+        getter: () => any,
+        callback: (newValue: any, oldValue: any) => void,
+        options?: { immediate?: boolean; lazy?: boolean }
+    ): AvenxWatcher;
+
+    /**
      * Internal method to set mount target element.
      * @param target
      * @private
@@ -440,4 +452,20 @@ export function defaultFormatter(level: string, args: any[]): any[];
 export const consoleTransport: {
     log(level: string, formattedArgs: any[]): void;
 };
+
+export class AvenxWatcher {
+    getter: () => any;
+    callback: (newValue: any, oldValue: any) => void;
+    options: { immediate?: boolean; lazy?: boolean };
+    value: any;
+    dirty: boolean;
+    constructor(
+        getter: () => any,
+        callback?: ((newValue: any, oldValue: any) => void) | null,
+        options?: { immediate?: boolean; lazy?: boolean }
+    );
+    get(): any;
+    evaluate(): any;
+    teardown(): void;
+}
 
