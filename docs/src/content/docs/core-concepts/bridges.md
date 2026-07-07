@@ -93,3 +93,69 @@ export default {
 ```
 
 Plain object bridges provide a simpler alternative for small amounts of shared state and business logic. For consistency with the CLI-generated structure and Avenx's object-oriented model, the class-based `AvenxBridge` pattern is recommended as the primary approach.
+
+## Compilation Lifecycle & Limits
+
+The Avenx compiler processes `.bridge.js` files by extracting the bridge definition beginning at `export default`. Declarations placed before `export default`, such as local variables, constants, and helper functions, are not preserved in the compiled output.
+
+As a result, bridge code that depends on declarations defined above `export default` may cause runtime `ReferenceError` exceptions after compilation.
+
+For example, avoid defining local utilities before the bridge export:
+
+```javascript
+const defaultRole = 'visitor';
+
+function createGuestUser() {
+  return {
+    name: 'Guest',
+    role: defaultRole,
+  };
+}
+
+export default class AuthBridge extends AvenxBridge {
+  constructor() {
+    super();
+    this.user = createGuestUser();
+  }
+}
+```
+
+In this example, `defaultRole` and `createGuestUser` are declared before `export default` and may be removed during compilation, leaving the bridge with references to declarations that no longer exist.
+
+Instead, keep helper methods inside the exported bridge class when the logic belongs specifically to that bridge:
+
+```javascript
+export default class AuthBridge extends AvenxBridge {
+  constructor() {
+    super();
+    this.user = this.createGuestUser();
+  }
+
+  createGuestUser() {
+    return {
+      name: 'Guest',
+      role: 'visitor',
+    };
+  }
+}
+```
+
+For reusable utilities shared across multiple parts of an application, move the logic into external utility files and expose it through supported application patterns. Utilities that are intentionally available globally can also be referenced through properties on the `window` object.
+
+```javascript
+export default class AuthBridge extends AvenxBridge {
+  constructor() {
+    super();
+    this.user = window.AppUtils.createGuestUser();
+  }
+}
+```
+
+When writing `.bridge.js` files:
+
+* Do not rely on variables, constants, or helper functions declared before `export default`.
+* Keep bridge-specific helper methods inside the exported bridge class.
+* Move reusable logic into external utility files.
+* Reference intentionally global utilities through properties on `window`.
+
+Understanding these compilation limits helps prevent missing declarations and runtime `ReferenceError` exceptions caused by helper code being removed from the compiled output.
