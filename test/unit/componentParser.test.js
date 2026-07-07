@@ -150,6 +150,26 @@ try {
     '<div data-avenx-comp="MyComponent"></div> <div data-avenx-comp="AnotherComponent"></div>',
   );
   console.log('  ✅ Self-closing and non-self-closing component tags tests passed!');
+
+  // Test 8: Strip standard HTML comments
+  console.log('🧪 Testing HTML Comments Stripping...');
+  const contentWithComments = `
+    <!-- This is a single line comment -->
+    <div class="test">
+      <!-- 
+        This is a multi-line
+        comment
+      -->
+      <p>Hello <!-- inline comment --> World</p>
+    </div>
+  `;
+  const templateWithComments = cp.extractTemplate(contentWithComments, {}, 'TestComp');
+  assert.ok(!templateWithComments.includes('comment'));
+  assert.ok(!templateWithComments.includes('<!--'));
+  assert.ok(!templateWithComments.includes('-->'));
+  assert.ok(templateWithComments.includes('<div class="test">'));
+  assert.ok(templateWithComments.includes('<p>Hello  World</p>'));
+  console.log('  ✅ HTML Comments Stripping tests passed!');
 } catch (error) {
   console.error('❌ ComponentParser tests failed!');
   console.error(error);
