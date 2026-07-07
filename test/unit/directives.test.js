@@ -4,8 +4,7 @@ const path = require('path');
 const StyleProcessor = require('../../lib/compiler/StyleProcessor');
 const ComponentParser = require('../../lib/compiler/ComponentParser');
 const { AvenxComponent } = require('../../lib/core/runtime/AvenxComponent');
-const { AvenxApp } = require('../../lib/core/runtime/AvenxApp');
-const { html, SafeHtml } = require('../../lib/core/security/escapeHtml');
+const { html } = require('../../lib/core/security/escapeHtml');
 
 // --- Mock DOM Implementation (reusing component_props.test.js mock DOM structure) ---
 class MockNode {
@@ -436,7 +435,6 @@ async function runTests() {
     fs.writeFileSync(tempFile, tempContent, 'utf-8');
 
     let loggedWarning = false;
-    const originalWarn = console.warn;
     const logger = require('../../lib/core/runtime/AvenxLogger').logger;
     const originalLoggerWarn = logger.warn;
     logger.warn = (msg) => {
@@ -562,7 +560,7 @@ async function runTests() {
         return `
           <ul>
             <template data-ax-for="items" data-ax-as="item" data-ax-key="item.id">
-              <li data-ax-show="item.active" data-ax-class="{ 'active-item': item.active }">${"{% item.name %}"}</li>
+              <li data-ax-show="item.active" data-ax-class="{ 'active-item': item.active }">${'{% item.name %}'}</li>
             </template>
           </ul>
         `;
