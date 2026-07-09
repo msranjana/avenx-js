@@ -34,6 +34,11 @@ export class AvenxComponent {
     props: Record<string, any>;
 
     /**
+     * The active route details.
+     */
+    readonly $route: { hash: string; page: string; params: Record<string, any> };
+
+    /**
      * Keys or mappings to share reactively with descendant components.
      */
     provide?: Record<string, any> | (() => Record<string, any>) | string[];
