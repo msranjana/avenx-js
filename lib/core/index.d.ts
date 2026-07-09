@@ -484,3 +484,54 @@ export class AvenxWatcher {
     teardown(): void;
 }
 
+export interface MockBridgeStateChange {
+    prop: string;
+    value: any;
+}
+
+export interface MockBridgeCall {
+    method: string;
+    args: any[];
+}
+
+export type MockBridge<T> = T & {
+    $calls: MockBridgeCall[];
+    $stateChanges: MockBridgeStateChange[];
+    $onStateChange(cb: (prop: string, value: any) => void): () => void;
+    $onCall(cb: (method: string, args: any[]) => void): () => void;
+    $reset(): void;
+    readonly $isMock: true;
+};
+
+export class AvenxMock {
+    static createMockBridge<T extends object>(
+        bridgeClassOrObject: T | (new (...args: any[]) => T),
+        initialData?: Partial<T> | Record<string, any>
+    ): MockBridge<T>;
+
+    static createSandbox(): AvenxSandbox;
+
+    static trigger(element: any, eventName: string, eventData?: Record<string, any>): void;
+}
+
+export class AvenxSandbox {
+    components: Map<string, typeof AvenxComponent>;
+    bridges: Record<string, any>;
+    constructor();
+    register(name: string, compClass: typeof AvenxComponent): this;
+    registerBridge(name: string, bridgeInstance: any): this;
+    setRoute(route: { hash?: string; page?: string; params?: Record<string, any> }): this;
+    waitForUpdate(): Promise<void>;
+    mount(
+        compClass: typeof AvenxComponent,
+        props?: Record<string, any>,
+        container?: any
+    ): {
+        instance: AvenxComponent;
+        container: any;
+        readonly html: string;
+        update(): void;
+        trigger(selectorOrElement: any, eventName: string, eventData?: Record<string, any>): void;
+    };
+}
+
