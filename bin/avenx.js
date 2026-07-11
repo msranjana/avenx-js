@@ -126,8 +126,10 @@ class AvenxCLI {
    * @param {string[]} args - Additional arguments for the command.
    */
   run(command, args) {
-    const type = args[0];
-    const name = args[1];
+    const dryRun = args.includes('--dry-run') || args.includes('-d');
+    const filteredArgs = args.filter((arg) => arg !== '--dry-run' && arg !== '-d');
+    const type = filteredArgs[0];
+    const name = filteredArgs[1];
 
     switch (command) {
       case 'init':
@@ -136,14 +138,14 @@ class AvenxCLI {
       case 'generate':
       case 'g':
         if (type === 'bridge') {
-          this.generateBridge(name);
+          this.generateBridge(name, dryRun);
         } else if (type === 'guard') {
-          this.generateGuard(name);
+          this.generateGuard(name, dryRun);
         } else if (type === 'page' || type === 'p') {
-          this.generatePage(name);
+          this.generatePage(name, dryRun);
         } else {
           // Default to component if only one arg or type is 'component'
-          this.generateComponent(name || type);
+          this.generateComponent(name || type, dryRun);
         }
         break;
       case 'build':
@@ -230,8 +232,9 @@ class AvenxCLI {
   /**
    * Generates a new Bridge class and template file.
    * @param name
+   * @param {boolean} [dryRun] - If true, logs the actions without writing any files.
    */
-  generateBridge(name) {
+  generateBridge(name, dryRun = false) {
     if (!name) {
       this.fail('Please provide a bridge name (e.g., avenx g bridge auth)');
       return;
@@ -241,14 +244,22 @@ class AvenxCLI {
     const capitalizedName = baseName + 'Bridge';
 
     const globalDir = path.join(this.baseDir, this.config.srcDir, 'global');
-    if (!fs.existsSync(globalDir)) {
-      fs.mkdirSync(globalDir, { recursive: true });
-    }
-
     const bridgePath = path.join(globalDir, `${lowerName}.bridge.js`);
 
     if (this.abortIfGeneratedPathExists('Bridge', lowerName, [bridgePath])) {
       return;
+    }
+
+    if (dryRun) {
+      console.log(
+        `🧪 [Dry Run] Bridge '${capitalizedName}' would be created at ${this.config.srcDir}/global/${lowerName}.bridge.js`,
+      );
+      console.log('🧪 [Dry Run] No files were written.');
+      return;
+    }
+
+    if (!fs.existsSync(globalDir)) {
+      fs.mkdirSync(globalDir, { recursive: true });
     }
 
     const template = this.readTemplate('bridge', 'bridge.js.template');
@@ -262,8 +273,9 @@ class AvenxCLI {
   /**
    * Generates a new Guard class and template file.
    * @param name
+   * @param {boolean} [dryRun] - If true, logs the actions without writing any files.
    */
-  generateGuard(name) {
+  generateGuard(name, dryRun = false) {
     if (!name) {
       this.fail('Please provide a guard name (e.g., avenx g guard auth)');
       return;
@@ -273,14 +285,22 @@ class AvenxCLI {
     const capitalizedName = baseName + 'Guard';
 
     const guardDir = path.join(this.baseDir, this.config.srcDir, 'guards');
-    if (!fs.existsSync(guardDir)) {
-      fs.mkdirSync(guardDir, { recursive: true });
-    }
-
     const guardPath = path.join(guardDir, `${lowerName}.guard.js`);
 
     if (this.abortIfGeneratedPathExists('Guard', lowerName, [guardPath])) {
       return;
+    }
+
+    if (dryRun) {
+      console.log(
+        `🧪 [Dry Run] Guard '${capitalizedName}' would be created at ${this.config.srcDir}/guards/${lowerName}.guard.js`,
+      );
+      console.log('🧪 [Dry Run] No files were written.');
+      return;
+    }
+
+    if (!fs.existsSync(guardDir)) {
+      fs.mkdirSync(guardDir, { recursive: true });
     }
 
     const template = this.readTemplate('guard', 'guard.js.template');
@@ -294,8 +314,9 @@ class AvenxCLI {
   /**
    * Generates a new Page class and template files.
    * @param name
+   * @param {boolean} [dryRun] - If true, logs the actions without writing any files.
    */
-  generatePage(name) {
+  generatePage(name, dryRun = false) {
     if (!name) {
       this.fail('Please provide a page name (e.g., avenx g page home)');
       return;
@@ -304,15 +325,23 @@ class AvenxCLI {
     const { capitalizedName, folderFileName: lowerName } = parseName(name);
 
     const pageDir = path.join(this.baseDir, this.config.srcDir, 'pages');
-    if (!fs.existsSync(pageDir)) {
-      fs.mkdirSync(pageDir, { recursive: true });
-    }
-
     const jsPath = path.join(pageDir, `${lowerName}.page.js`);
     const cssPath = path.join(pageDir, `${lowerName}.page.css`);
 
     if (this.abortIfGeneratedPathExists('Page', lowerName, [jsPath, cssPath])) {
       return;
+    }
+
+    if (dryRun) {
+      console.log(`🧪 [Dry Run] Page '${capitalizedName}' would be created at:`);
+      console.log(`  ${this.config.srcDir}/pages/${lowerName}.page.js`);
+      console.log(`  ${this.config.srcDir}/pages/${lowerName}.page.css`);
+      console.log('🧪 [Dry Run] No files were written.');
+      return;
+    }
+
+    if (!fs.existsSync(pageDir)) {
+      fs.mkdirSync(pageDir, { recursive: true });
     }
 
     const jsTemplate = this.readTemplate('page', 'page.js.template');
@@ -328,8 +357,9 @@ class AvenxCLI {
   /**
    * Generates a new component folder and template files, and registers it in main.app.js.
    * @param name
+   * @param {boolean} [dryRun] - If true, logs the actions without writing any files.
    */
-  generateComponent(name) {
+  generateComponent(name, dryRun = false) {
     if (!name) {
       this.fail('Please provide a component name (e.g., avenx g my-component)');
       return;
@@ -340,6 +370,17 @@ class AvenxCLI {
     const compDir = path.join(this.baseDir, this.config.srcDir, 'components', lowerName);
 
     if (this.abortIfGeneratedPathExists('Component', lowerName, [compDir])) {
+      return;
+    }
+
+    if (dryRun) {
+      console.log(`🧪 [Dry Run] Component '${lowerName}' would be created at:`);
+      console.log(`  ${this.config.srcDir}/components/${lowerName}/${lowerName}.component.js`);
+      console.log(`  ${this.config.srcDir}/components/${lowerName}/${lowerName}.component.css`);
+      console.log(`🧪 [Dry Run] ${this.config.srcDir}/main.app.js would be updated with:`);
+      console.log(`  import ${capitalizedName} from './components/${lowerName}/${lowerName}.component.js';`);
+      console.log(`  app.register('${capitalizedName}', ${capitalizedName});`);
+      console.log('🧪 [Dry Run] No files were written.');
       return;
     }
 
@@ -611,6 +652,9 @@ Commands:
   check (lint)              Validate templates without building
   serve [port]              Start dev server with hot-reload (default: 3000)
   help                      Show this help message
+
+Options:
+  --dry-run, -d             Preview generate actions without writing any files
     `);
   }
 }
