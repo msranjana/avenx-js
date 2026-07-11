@@ -53,6 +53,7 @@ export default defineConfig({
 						{ label: 'AvenxPage API', slug: 'api-reference/page' },
 						{ label: 'AvenxRouter & Guard API', slug: 'api-reference/router-guard' },
 						{ label: 'Utility Functions', slug: 'api-reference/utils' },
+						{ label: 'Testing API', slug: 'api-reference/testing' },
 					],
 				},
 				{
