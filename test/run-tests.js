@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fork } from 'child_process';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -40,8 +40,16 @@ function findTestFiles(dir) {
 async function runTestFile(file) {
   const relativePath = path.relative(path.join(__dirname, '..'), file);
   console.log(`\n🏃 Running: ${relativePath}`);
+
+  const execArgv = [...process.execArgv];
+  const isUnitTest = file.includes(path.join('test', 'unit')) || file.includes('test/unit');
+  if (isUnitTest) {
+    const registratorPath = path.resolve(__dirname, 'helpers/register-happy-dom.js');
+    execArgv.push('--import', pathToFileURL(registratorPath).href);
+  }
+
   return new Promise((resolve) => {
-    const child = fork(file, [], { stdio: 'inherit' });
+    const child = fork(file, [], { stdio: 'inherit', execArgv });
     child.on('exit', (code) => {
       if (code === 0) {
         resolve({ file: relativePath, success: true });

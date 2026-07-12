@@ -10,12 +10,6 @@ const window = new Window({
   }
 });
 
-// Bind window self-references
-window.window = window;
-window.self = window;
-window.top = window;
-window.parent = window;
-
 const keys = [
   'window',
   'document',
