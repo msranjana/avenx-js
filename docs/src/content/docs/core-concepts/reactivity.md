@@ -121,12 +121,14 @@ Declare a `provide` property (or static method) on the ancestor component. It ca
 
 ```javascript
 // src/pages/dashboard.page.js
-<state theme="dark" />
+<state theme="dark" />;
 
 // Object form: explicit keys and values
 provide = {
   theme: this.state.theme,
-  setTheme: (value) => { this.state.theme = value; },
+  setTheme: (value) => {
+    this.state.theme = value;
+  },
 };
 ```
 
