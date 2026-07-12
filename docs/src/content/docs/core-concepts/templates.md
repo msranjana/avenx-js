@@ -94,7 +94,30 @@ Components can receive child HTML blocks using `<slot>` elements. Both default a
 
 If a component's caller does not provide content for a given slot, Avenx-JS automatically falls back to rendering the default content defined inside that `<slot>` element in the component's template. This applies to both named and default slots. For example, in the `Card` component above, if no `slot="header"` element is passed in, the header slot will render its fallback text, `Default Header`, instead of being left empty. This makes it easy to define sensible defaults for optional component content without requiring the caller to always supply every slot.
 
-## 5. SVG Support
+## 5. Passing Props to Child Components (`data-props-*`)
+
+Custom child components can receive props from a parent page or component using the `data-props-<propName>` attribute syntax. The parser evaluates the attribute's value as an expression in the parent's scope and passes the resulting value into the child component as a prop.
+
+```html
+<MyProfile data-props-user="state.currentUser" />
+```
+
+Here, `data-props-user` passes the value of `state.currentUser` from the parent scope into the `MyProfile` component as the `user` prop. Inside the child component, the prop is accessed via `this.props.user`:
+
+```html
+<!-- src/components/my-profile/my-profile.component.js -->
+<div class="profile">
+  <p>Welcome, {{ this.props.user.name }}</p>
+</div>
+```
+
+> **Note:** The portion of the attribute name after `data-props-` becomes the prop name on the child (e.g. `data-props-user` → `props.user`). Multiple props can be passed by adding additional `data-props-*` attributes:
+
+```html
+<MyProfile data-props-user="state.currentUser" data-props-isAdmin="state.isAdmin" />
+```
+
+## 6. SVG Support
 
 Avenx-JS natively supports rendering SVG elements inside templates. During template cloning and patching, the framework automatically preserves the correct SVG namespace (`http://www.w3.org/2000/svg`), ensuring that SVG graphics render correctly in the browser.
 This includes nested SVG elements such as `<rect>`, `<circle>`, `<path>`, and other SVG-specific tags. Even when templates are parsed using `DOMParser`, Avenx-JS automatically transitions SVG elements into the correct namespace during patching and cloning, so no additional configuration or manual namespace handling is required.
