@@ -2,25 +2,46 @@
 title: 'Actions & Event Handling'
 description: 'Learn about actions, event handling, event delegation, and custom events in Avenx-JS.'
 ---
-
 Avenx-JS simplifies capturing DOM events by letting you attach action handlers directly within elements using an `@` prefix.
-
 ## Binding Events
-
 To bind an event listener, prefix the event name with `@` followed by the expression to execute:
-
 ```html
 <button @click="increment()">Increment</button> <input @input="state.inputValue = event.target.value" />
 ```
-
 :::note
 **Context Availability:** Inside event expressions, you have access to the component's `state`, `computed` values, `methods`, registered `bridges`, and the native DOM `event` object.
 :::
-
+## Event Modifiers
+Event bindings support dot-suffixed **modifiers** that adjust how the underlying DOM event is handled before your expression runs. Modifiers are appended directly to the event name, e.g. `@submit.prevent="save"` or `@keydown.enter="submit"`.
+| Modifier | Applies to | Behavior |
+|---|---|---|
+| `.prevent` | Any event | Calls `event.preventDefault()` before invoking the handler. |
+| `.stop` | Any event | Calls `event.stopPropagation()` before invoking the handler. |
+| `.once` | Any event | Automatically removes the listener after it fires a single time. |
+| `.enter` | Keyboard events | Only invokes the handler if the event's key is `Enter`. |
+| `.escape` | Keyboard events | Only invokes the handler if the event's key is `Escape`. |
+`.prevent` and `.stop` wrap the handler with the corresponding DOM method call:
+```html
+<form @submit.prevent="save()">
+  <button type="submit">Save</button>
+</form>
+<div @click.stop="toggleMenu()">
+  <!-- Click here won't bubble up to parent listeners -->
+</div>
+```
+`.once` detaches the listener after the first invocation, useful for one-time actions like dismissing a banner:
+```html
+<button @click.once="dismissBanner()">Got it</button>
+```
+`.enter` and `.escape` act as key filters on keyboard events, so the handler only runs when the matching key is pressed:
+```html
+<input @keydown.enter="submit()" placeholder="Press Enter to submit" />
+<input @keydown.escape="clearInput()" placeholder="Press Escape to clear" />
+```
+:::note
+**Combining modifiers:** Modifiers can be chained together, for example `@keydown.enter.prevent="submit()"` filters for the Enter key and prevents the default action (such as form submission) in a single binding.
+:::
 ## Event Delegation
-
 Avenx does not attach event listeners to every single DOM node. Instead, the runtime's `EventBinder` uses **event delegation**. It listens for events at the component's root element and determines the correct target on invocation, saving browser memory and keeping dynamic list updates fast.
-
 ## Custom Component Events
-
 Components can communicate with their parent containers by dispatching native or custom events. The container can capture them using standard listeners or lifecycle bindings.
