@@ -66,6 +66,18 @@ This lifecycle method is executed prior to entering a route.
 Redirect paths returned from `canActivate` must start with `#`. `AvenxRouter.navigate` only applies the configured `prefix` and namespace settings to hash paths — a path without the `#` prefix bypasses this resolution and can break navigation in apps served with a custom `prefix`.
 :::
 
+:::note
+When the matched route hash includes query parameters,both `to.params.query` and `from.params.query` contain the parsed query object- using the type coercion rules described in [Query Parameters](/core-concepts/routing/#query-parameters). This lets a guard make decisions based on query values, for example:
+```javascript
+  canActivate(to, from) {
+    if (to.hash.startsWith('#/dashboard') && to.params.query?.tab === 'admin' && !window.isAdmin) {
+      return '#/dashboard';
+    }
+    return true;
+  }
+```
+:::
+
 #### Sample Guard Implementation
 
 ```javascript

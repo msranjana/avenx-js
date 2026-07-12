@@ -38,6 +38,49 @@ Route segments starting with `:` are dynamic variables. The values parsed from t
   <h1>Viewing Profile ID: {{ id }}</h1>
 </div>
 ```
+### Query Parameters
+
+The portion of a route hash after `?` is automatically parsed into an object and made available as `state.query`. This works alongside dynamic parameters (`:id`) and can be read the same way,in templates or actions:
+
+```html
+<!-- src/pages/dashboard.page.js -->
+<!-- #/dashboard?tab=analytics&user=123 ->state.query.tab==='analytics' -->
+    <div class="dashboard">
+      <h1>Current tab: {{ query.tab }}</h1>
+    </div>
+
+```
+
+Query parameters are also available inside component actions using `this.state.query`:
+
+```javascript
+//src/pages/dashboard.page.js
+onMount() {
+  const tab = this.state.query.tab;
+  this.loadTabData(tab);
+}
+```
+#### Type Coercion
+While dynamic route parameters are always strings, query parameter values on the other hand are coerced based on their content:
+
+| Raw value | Parsed as |
+| ---- | ---- |
+| `"true"` | Boolean `true` |
+|`"false"` | Boolean `false`|
+| A numeric string(e.g. `"123"`) |  `Number` (e.g.`123`) |
+| Anything else | `String` |
+
+```javascript
+//#/settings?darkMode=true&fontSize=16&theme=blue
+state.query={
+  darkMode : true, //boolean
+  fontSize:16,     //number
+  theme: 'blue'   //string
+}
+```
+:::note
+If the route hash has no `?` segment,`state.query` is undefined rather than an empty object. Hence, check for its existence before accessing nested properties.
+:::
 
 ### Wildcard Path Matchers
 
