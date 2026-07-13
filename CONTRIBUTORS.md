@@ -56,6 +56,7 @@ Every contribution — whether code, documentation, or ideas — helps move the 
 29. [@Clintobi](https://github.com/Clintobi)
 30. [@janhaviborade05](https://github.com/janhaviborade05)
 31. [@ShreemayeeGuriya](https://github.com/ShreemayeeGuriya)
+32. [@Yurii201811](https://github.com/Yurii201811)
 
 ---
 
