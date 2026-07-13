@@ -469,13 +469,12 @@ class AvenxCLI {
    * Automatically removes imports, registrations, and mount statements for a class from src/main.app.js.
    * @param {string} className
    * @param {string} folderName
-   * @param {string} type
    */
-  unregisterFromMainApp(className, folderName, type) {
+  unregisterFromMainApp(className, folderName) {
     const mainPath = path.join(this.baseDir, this.config.srcDir, 'main.app.js');
     if (!fs.existsSync(mainPath)) return;
 
-    let content = fs.readFileSync(mainPath, 'utf-8');
+    const content = fs.readFileSync(mainPath, 'utf-8');
 
     // Remove import statements (handle single or double quotes, and optional trailing semicolon or carriage return)
     const importRegex = new RegExp(
@@ -561,7 +560,7 @@ class AvenxCLI {
       console.log(`ℹ️ Component '${lowerName}' directory was not found.`);
     }
 
-    this.unregisterFromMainApp(capitalizedName, lowerName, 'component');
+    this.unregisterFromMainApp(capitalizedName, lowerName);
   }
 
   /**
@@ -607,7 +606,7 @@ class AvenxCLI {
       console.log(`ℹ️ Page '${capitalizedName}' files were not found.`);
     }
 
-    this.unregisterFromMainApp(capitalizedName, lowerName, 'page');
+    this.unregisterFromMainApp(capitalizedName, lowerName);
   }
 
   /**
@@ -641,7 +640,7 @@ class AvenxCLI {
       console.log(`ℹ️ Bridge '${capitalizedName}' file was not found.`);
     }
 
-    this.unregisterFromMainApp(capitalizedName, lowerName, 'bridge');
+    this.unregisterFromMainApp(capitalizedName, lowerName);
   }
 
   /**
@@ -675,7 +674,7 @@ class AvenxCLI {
       console.log(`ℹ️ Guard '${capitalizedName}' file was not found.`);
     }
 
-    this.unregisterFromMainApp(capitalizedName, lowerName, 'guard');
+    this.unregisterFromMainApp(capitalizedName, lowerName);
   }
 
   /**
