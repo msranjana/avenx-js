@@ -22,11 +22,12 @@ export class AvenxGuard {
  * Base class for all Avenx components.
  * Manages state, reactivity, rendering, and lifecycle.
  */
-export class AvenxComponent {
+export class AvenxComponent<S extends Record<string, any> = Record<string, any>> {
     /**
      * The reactive state proxy of the component.
+     * When a generic state shape `S` is provided, this property is fully typed.
      */
-    state: Record<string, any>;
+    state: S;
 
     /**
      * The reactive props of the component.
@@ -36,7 +37,7 @@ export class AvenxComponent {
     /**
      * The component instance that mounted this component, or null for root components.
      */
-    readonly $parent: AvenxComponent | null;
+    readonly $parent: AvenxComponent<any> | null;
 
     /**
      * The active route details.
@@ -62,7 +63,7 @@ export class AvenxComponent {
      * @param props Input properties passed down from parent.
      */
     constructor(
-        initialState?: Record<string, any>,
+        initialState?: S,
         computed?: Record<string, string>,
         bridges?: Record<string, any>,
         template?: string,
@@ -154,7 +155,7 @@ export class AvenxComponent {
  * AvenxPage is a specialized component that can host child components.
  * It automatically mounts child components defined in its template via [data-avenx-comp].
  */
-export class AvenxPage extends AvenxComponent {
+export class AvenxPage<S extends Record<string, any> = Record<string, any>> extends AvenxComponent<S> {
     /**
      * @param initialState Initial page state.
      * @param computed Page computed properties.
@@ -164,7 +165,7 @@ export class AvenxPage extends AvenxComponent {
      * @param componentRegistry Component class registry map.
      */
     constructor(
-        initialState?: Record<string, any>,
+        initialState?: S,
         computed?: Record<string, string>,
         bridges?: Record<string, any>,
         template?: string,
@@ -371,7 +372,7 @@ export class AvenxBridge {
  */
 export class StateFactory {
     constructor(handlerFactoryClass?: typeof ProxyHandlerFactory);
-    create(initialState?: Record<string, any>, options?: Record<string, any>): Record<string, any>;
+    create<T extends Record<string, any> = Record<string, any>>(initialState?: T, options?: Record<string, any>): T;
 }
 
 /**
@@ -447,7 +448,7 @@ export class TemplateRenderer {
  * Triggers initial mounting states.
  */
 export class LifecycleManager {
-    mount(component: AvenxComponent, target: Element | string): void;
+    mount(component: AvenxComponent<any>, target: Element | string): void;
 }
 
 export class ComputedRegistry {
@@ -568,7 +569,7 @@ export class AvenxSandbox {
         props?: Record<string, any>,
         container?: any
     ): {
-        instance: AvenxComponent;
+        instance: AvenxComponent<any>;
         container: any;
         readonly html: string;
         update(): void;
