@@ -26,6 +26,27 @@ The component file contains configuration tags at the top and the HTML template 
 </div>
 ```
 
+## Single `<state />` Tag Per Component
+
+> **Important:** Only the **first** `<state />` tag in a `.component.js` file is parsed. If a component contains more than one `<state />` tag, every tag after the first is silently ignored, and the properties declared in those extra tags will **not** become reactive.
+
+It can be tempting to split state declarations into multiple `<state />` tags to keep them organized, for example by feature or by section:
+
+```html
+<!-- This will NOT work as expected -->
+<state username="Guest" isLoggedIn="false" />
+<state theme="light" notifications="true" />
+```
+
+In the example above, only `username` and `isLoggedIn` become reactive state. `theme` and `notifications` are dropped during compilation with no warning or error, which can cause confusing bugs where a property behaves as if it were never declared.
+
+All reactive properties for a component must be combined into a **single, unified** `<state />` tag:
+
+```html
+<!-- Correct: all properties in one <state /> tag -->
+<state username="Guest" isLoggedIn="false" theme="light" notifications="true" />
+```
+
 ## Attribute Coercion & Types
 
 Every attribute passed to `<state>` starts as a plain HTML attribute string. Before the value is assigned to reactive state, the component compiler's expression parser coerces it into the corresponding JavaScript type: strings, booleans, numbers, arrays, and objects are all resolved automatically.
