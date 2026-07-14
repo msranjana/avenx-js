@@ -57,6 +57,7 @@ function runTest() {
     // Assert that the first run logs the Created: lines
     assert.match(init1Output, /Created: src\/components/, 'first init run should log folder creation');
     assert.match(init1Output, /Created: \.vscode\/jsconfig\.json/, 'first init run should log file creation');
+    assert.match(init1Output, /Created: package\.json/, 'first init run should log package.json creation');
 
     // Run the init command again in the test directory
     const init2Output = execSync(`node ${BIN_PATH} init`, { cwd: TEST_DIR, encoding: 'utf8' });
@@ -74,6 +75,7 @@ function runTest() {
       '.vscode/settings.json',
       'index.html',
       'src/main.app.js',
+      'package.json',
     ];
 
     expectedPaths.forEach((p) => {
@@ -81,6 +83,23 @@ function runTest() {
       assert.ok(fs.existsSync(fullPath), `Missing expected path: ${p}`);
       console.log(`  ✅ Found: ${p}`);
     });
+
+    // Verify package.json exists and check contents
+    const packageJsonFile = JSON.parse(fs.readFileSync(path.join(__dirname, '../../package.json'), 'utf-8'));
+    const expectedVersion = packageJsonFile.version;
+    const generatedPackagePath = path.join(TEST_DIR, 'package.json');
+    const generatedPackage = JSON.parse(fs.readFileSync(generatedPackagePath, 'utf-8'));
+    assert.strictEqual(generatedPackage.name, 'test-project', 'package.json name should match folder name');
+    assert.strictEqual(generatedPackage.type, 'module', 'package.json type should be module');
+    assert.deepStrictEqual(generatedPackage.scripts, {
+      dev: 'avenx serve',
+      build: 'avenx build',
+      serve: 'avenx serve',
+    }, 'package.json scripts should be pre-defined');
+    assert.deepStrictEqual(generatedPackage.dependencies, {
+      'avenx-core': `^${expectedVersion}`,
+    }, 'package.json dependencies should contain avenx-core with correct version');
+    console.log('  ✅ Verified package.json contents');
 
     // Verify content of a template file
     const settings = JSON.parse(fs.readFileSync(path.join(TEST_DIR, '.vscode/settings.json'), 'utf-8'));

@@ -234,6 +234,28 @@ class AvenxCLI {
       );
       console.log(`  Created: ${this.config.srcDir}/main.app.js`);
     }
+
+    // Create initial package.json
+    const packageJsonPath = path.join(this.baseDir, 'package.json');
+    if (!fs.existsSync(packageJsonPath)) {
+      const projectName = path.basename(this.baseDir).toLowerCase().replace(/[^a-z0-9-_]/g, '') || 'avenx-app';
+      const packageContent = {
+        name: projectName,
+        version: '1.0.0',
+        type: 'module',
+        scripts: {
+          dev: 'avenx serve',
+          build: 'avenx build',
+          serve: 'avenx serve',
+        },
+        dependencies: {
+          'avenx-core': `^${packageJson.version}`,
+        },
+      };
+      fs.writeFileSync(packageJsonPath, JSON.stringify(packageContent, null, 2) + '\n');
+      console.log('  Created: package.json');
+    }
+
     // Create initial .gitignore
     const gitignorePath = path.join(this.baseDir, '.gitignore');
 
