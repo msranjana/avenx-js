@@ -171,9 +171,19 @@ class AvenxCLI {
       case 'lint':
         this.checkProject(args);
         break;
-      case 'serve':
-        this.serveProject(args[0] || process.env.PORT || this.config.server.port);
+      case 'serve':{
+        const portIdx = args.findIndex(a => a === '--port' || a === '-p');
+        const hostIdx = args.findIndex(a => a === '--host' || a === '-h');
+        
+        const port = portIdx !== -1 && args[portIdx + 1] 
+          ? parseInt(args[portIdx + 1], 10) 
+          : (!args[0]?.startsWith('-') && args[0]) || process.env.PORT || this.config.server.port || 3000;
+          
+        const host = hostIdx !== -1 && args[hostIdx + 1] ? args[hostIdx + 1] : 'localhost';
+        
+        this.serveProject(port, host);
         break;
+      }
       case 'watch':
       case 'w':
         console.log(`👀 Watching for changes in ${this.config.srcDir}/...\n`);
@@ -764,7 +774,7 @@ class AvenxCLI {
    * Starts a local development server and watches for changes.
    * @param port
    */
-  serveProject(port) {
+  serveProject(port, host = 'localhost') {
     this.liveReloadClients = [];
     this.buildProject();
     this.watchProject();
@@ -844,6 +854,8 @@ class AvenxCLI {
       });
     });
 
+    server.listen(port, host, () => {
+      const url = `http://${host}:${port}`;
     server.on('error', (err) => {
       if (err.code === 'EADDRINUSE') {
         console.error(
