@@ -54,6 +54,33 @@ try {
     'Should scope nested selectors inside @supports',
   );
 
+  // Verify selector lists inside comma-separated media queries
+  const mediaListCss = `
+    @media screen and (min-width: 40rem), print {
+        h1, h2 { color: navy; }
+        &:is(.compact, .dense), [data-state="open,ready"] { display: block; }
+    }
+    `;
+  const spMediaList = new StyleProcessor();
+  const hashMediaList = spMediaList.getHash(mediaListCss, 'MediaListComponent');
+  spMediaList.extractRules(mediaListCss, hashMediaList);
+  const generatedMediaListCss = spMediaList.scopedStyles;
+
+  assert.ok(
+    generatedMediaListCss.includes('@media screen and (min-width: 40rem), print {'),
+    'Should retain comma-separated media queries',
+  );
+  assert.ok(
+    generatedMediaListCss.includes(`.${hashMediaList}h1, .${hashMediaList}h2 { color: navy; }`),
+    'Should scope every selector inside media queries',
+  );
+  assert.ok(
+    generatedMediaListCss.includes(
+      `.${hashMediaList}:is(.compact, .dense), .${hashMediaList}[data-state="open,ready"] { display: block; }`,
+    ),
+    'Should preserve nested commas while scoping selector lists',
+  );
+
   // Verify comments and braces inside quoted strings
   const commentCurlyCss = `
     /* comment { */
