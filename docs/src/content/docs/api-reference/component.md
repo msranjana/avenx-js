@@ -14,11 +14,12 @@ The base class from which all standard UI components inherit. It manages reactiv
 
 Implement these functions in your component logic to execute code at specific points in the component's lifespan:
 
-| Method Name   | Description                                                                                                    |
-| ------------- | -------------------------------------------------------------------------------------------------------------- |
-| `onMount()`   | Called immediately after the component's element is attached to the DOM. Place your initial data fetches here. |
-| `onUpdate()`  | Called after the component has updated and patched the DOM tree. Use this for DOM measurements.                |
-| `onUnmount()` | Called before the component is detached and cleaned up. Ideal for removing timers and global listeners.        |
+| Method Name        | Description                                                                                                    |
+| ------------------ | -------------------------------------------------------------------------------------------------------------- |
+| `onMount()`        | Called immediately after the component's element is attached to the DOM. Place your initial data fetches here. |
+| `onBeforeUpdate()` | Called before the component's DOM is patched during reactive state updates. Use this to read the current DOM state (e.g. scroll positions). |
+| `onUpdate()`       | Called after the component has updated and patched the DOM tree. Use this for DOM measurements.                |
+| `onUnmount()`      | Called before the component is detached and cleaned up. Ideal for removing timers and global listeners.        |
 
 ## DOM Events
 

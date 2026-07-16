@@ -109,6 +109,11 @@ export class AvenxComponent<S extends Record<string, any> = Record<string, any>>
     onUpdate?(): void;
 
     /**
+     * Component before update lifecycle hook (action).
+     */
+    onBeforeUpdate?(): void;
+
+    /**
      * Component unmount lifecycle hook (action).
      */
     onUnmount?(): void;
