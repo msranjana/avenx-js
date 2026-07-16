@@ -15,7 +15,7 @@ Module.prototype.require = function(name) {
       throw new Error("Cannot find module 'sass'");
     }
     return {
-      compileString: (cssContent, options) => {
+      compileString: (cssContent) => {
         let css = cssContent;
         // Mock compile: replace variables and nesting
         css = css.replace(/\$primary/g, '#ff0000');
