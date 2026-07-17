@@ -116,6 +116,81 @@ This typically happens for a few common reasons:
 
 This validation exists purely to help catch mistakes early — it will not prevent your app from compiling or running, but an undeclared reference will typically resolve to `undefined` at runtime, so it's best to address the warning rather than ignore it.
 
+### AVX_W15 — COMPONENT_INJECT_KEY_NOT_FOUND
+
+**Warning Message**
+
+```
+Injected key "{0}" not found in any ancestor component.
+```
+
+**Cause:** This warning is emitted at runtime when a component's `inject` option requests a key that no ancestor component provides via the `provide` option. Avenx-JS walks up the DOM tree from the component to find a matching provider; if none is found, the injected property resolves to `undefined` and this warning is issued.
+
+The Provide/Inject API enables parent components to share data or methods with all descendants in the tree without passing them through every intermediate component via props. A provider component declares values using `provide`, and any descendant retrieves them using `inject`.
+
+**Resolution:** To resolve this warning:
+
+1. Ensure an ancestor component declares the requested key in its `provide` option.
+2. Verify the component hierarchy — the provider must be an ancestor in the DOM tree (sibling and child components are not searched).
+3. If the injected value is optional, guard against `undefined` at the point of use with a fallback value.
+
+**Incorrect**
+
+```js
+// ChildComponent
+export default {
+  inject: ['theme'],
+  template: `<p>Theme: {{ theme }}</p>`
+};
+```
+
+No ancestor provides a `theme` key, so accessing `theme` triggers AVX_W15 and returns `undefined`.
+
+**Correct**
+
+```js
+// ParentComponent
+export default {
+  provide: {
+    theme: 'dark'
+  },
+  // ...
+};
+```
+
+```js
+// ChildComponent
+export default {
+  inject: ['theme'],
+  template: `<p>Theme: {{ theme }}</p>`
+};
+```
+
+The `provide` option accepts an object mapping keys to values, or an array of keys to expose from the component's `state`, `props`, `computed`, or `actions`. The `inject` option accepts an array of keys (local key matches provide key) or an object mapping local property names to provide keys:
+
+```js
+export default {
+  inject: { currentTheme: 'theme' },
+  template: `<p>Theme: {{ currentTheme }}</p>`
+};
+```
+
+**Defensive Example**
+
+```js
+// ChildComponent — handle optional injection with a default value
+export default {
+  inject: { currentTheme: 'theme' },
+  computed: {
+    safeTheme() {
+      return this.currentTheme || 'light';
+    }
+  }
+};
+```
+
+Using a computed property as a fallback ensures your component behaves gracefully even when no matching provider exists in the ancestor tree.
+
 ### AVX_W16 — SECURITY_SANITIZED_TAG
 
 **Warning Message**
