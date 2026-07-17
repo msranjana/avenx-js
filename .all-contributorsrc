@@ -393,6 +393,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "KaizokuHam",
+      "name": "KaizokuHam",
+      "avatar_url": "https://avatars.githubusercontent.com/u/304468983?v=4",
+      "profile": "https://github.com/KaizokuHam",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "commitType": "docs",
