@@ -375,6 +375,17 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "sid0229",
+      "name": "Sid",
+      "avatar_url": "https://avatars.githubusercontent.com/u/140417576?v=4",
+      "profile": "https://siddhant-gahlot.vercel.app/",
+      "contributions": [
+        "doc"
+      ]
     }
-  ]
+  ],
+  "commitType": "docs",
+  "commitConvention": "angular"
 }
