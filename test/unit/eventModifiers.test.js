@@ -180,6 +180,58 @@ try {
   assert.strictEqual(chainPrevent, true);
   assert.strictEqual(chainStop, true);
 
+  // 8. Test keyup/keydown modifiers (.space)
+  const spaceEl = createMockElement('INPUT', { '@keydown.space': 'handleSpace' });
+  binder.bind(spaceEl, dispatcher);
+  resetDispatcher();
+
+  // Triggering other key should not call handler
+  spaceEl.trigger('keydown', { type: 'keydown', key: 'a' });
+  assert.strictEqual(executedSource, null, 'Pressing a should not run space handler');
+
+  // Triggering Space key should call handler
+  spaceEl.trigger('keydown', { type: 'keydown', key: ' ' });
+  assert.strictEqual(executedSource, 'handleSpace', 'Pressing Space should run space handler');
+
+  // 9. Test keyup/keydown modifiers (.tab)
+  const tabEl = createMockElement('INPUT', { '@keydown.tab': 'handleTab' });
+  binder.bind(tabEl, dispatcher);
+  resetDispatcher();
+
+  // Triggering other key should not call handler
+  tabEl.trigger('keydown', { type: 'keydown', key: 'Enter' });
+  assert.strictEqual(executedSource, null, 'Pressing Enter should not run tab handler');
+
+  // Triggering Tab key should call handler
+  tabEl.trigger('keydown', { type: 'keydown', key: 'Tab' });
+  assert.strictEqual(executedSource, 'handleTab', 'Pressing Tab should run tab handler');
+
+  // 10. Test keyup/keydown modifiers (.delete)
+  const deleteEl = createMockElement('INPUT', { '@keydown.delete': 'handleDelete' });
+  binder.bind(deleteEl, dispatcher);
+  resetDispatcher();
+
+  // Triggering other key should not call handler
+  deleteEl.trigger('keydown', { type: 'keydown', key: 'Backspace' });
+  assert.strictEqual(executedSource, null, 'Pressing Backspace should not run delete handler');
+
+  // Triggering Delete key should call handler
+  deleteEl.trigger('keydown', { type: 'keydown', key: 'Delete' });
+  assert.strictEqual(executedSource, 'handleDelete', 'Pressing Delete should run delete handler');
+
+  // 11. Test keyup/keydown modifiers (.esc)
+  const escEl = createMockElement('INPUT', { '@keydown.esc': 'handleEsc' });
+  binder.bind(escEl, dispatcher);
+  resetDispatcher();
+
+  // Triggering other key should not call handler
+  escEl.trigger('keydown', { type: 'keydown', key: 'Enter' });
+  assert.strictEqual(executedSource, null, 'Pressing Enter should not run esc handler');
+
+  // Triggering Escape key should call handler (via esc mapping)
+  escEl.trigger('keydown', { type: 'keydown', key: 'Escape' });
+  assert.strictEqual(executedSource, 'handleEsc', 'Pressing Escape should run esc handler');
+
   // 7. Test compilation of modifier attributes in ComponentParser
   const sp = new StyleProcessor();
   const cp = new ComponentParser(sp);
