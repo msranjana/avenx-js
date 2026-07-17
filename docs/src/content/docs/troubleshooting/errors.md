@@ -115,6 +115,42 @@ This typically happens for a few common reasons:
 3. If the identifier is intentionally dynamic (e.g. supplied only at runtime through a bridge that isn't statically known to the parser), you can safely ignore the warning, though most cases indicate a genuine bug.
 
 This validation exists purely to help catch mistakes early — it will not prevent your app from compiling or running, but an undeclared reference will typically resolve to `undefined` at runtime, so it's best to address the warning rather than ignore it.
+### AVX_W17 — SECURITY_SANITIZED_ATTRIBUTE
+
+```text
+[Avenx Validation Warning] Sanitized attribute "{0}" when stripping content.
+```
+
+**Cause:** This warning is emitted when Avenx's HTML sanitizer detects an unsafe HTML attribute or URI while processing templates or raw values. To protect applications from Cross-Site Scripting (XSS) attacks, the sanitizer removes dangerous inline event handler attributes (such as `onclick`, `onload`, and `onerror`) and unsafe URI protocols (such as `javascript:`) before rendering.
+
+**Impact:** Unsafe attributes and protocol URIs can allow arbitrary JavaScript execution in the browser, creating Cross-Site Scripting (XSS) vulnerabilities. Sanitizing these values helps prevent malicious code from being executed.
+
+**Resolution:** To resolve this warning:
+
+1. Remove inline event handler attributes such as `onclick`, `onload`, and `onerror`.
+2. Avoid using `javascript:` or other unsafe URI protocols in attributes such as `href` or `src`.
+3. Attach event handlers using the framework's supported event binding mechanism or standard JavaScript event listeners.
+4. Sanitize any user-provided HTML before rendering it.
+
+**Incorrect**
+
+```html
+<img src="image.png" onerror="alert('XSS')">
+
+<a href="javascript:alert('Hello')">Click me</a>
+```
+
+**Correct**
+
+```js
+button.addEventListener("click", handleClick);
+```
+
+```html
+<a href="/dashboard">Dashboard</a>
+```
+
+> **Note:** This warning indicates that Avenx removed one or more unsafe attributes during sanitization. Although the application can continue running, the affected attribute will not be rendered. Review the source HTML and replace unsafe attributes with secure alternatives.
 
 ### AVX_W18 — RENDER_LIST_EVALUATION_FAILED
 
@@ -352,7 +388,6 @@ Deriving the condition through a guarded `computed` property ensures `data-ax-sh
 ### AVX_W23 — DIRECTIVE_CLASS_EVALUATION_FAILED
 (new content here)
 
-## Runtime Codes (`AVX_R*`)
 ## Runtime Codes (`AVX_R*`)
 
 | Code        | Default Message                                                                         | Cause & Resolution                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
