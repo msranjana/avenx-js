@@ -278,6 +278,69 @@ const computed = {
 ```
 
 Deriving the value through a guarded `computed` property ensures `data-ax-html` always receives a valid string and prevents evaluation failures.
+
+### AVX_W22 — DIRECTIVE_SHOW_EVALUATION_FAILED
+
+**Warning Message**
+Failed to evaluate data-ax-show: {0}. Error: {1}
+
+**Cause:** This warning is emitted at runtime when Avenx-JS attempts to evaluate the condition bound to a `data-ax-show="..."` directive, but the expression throws an exception. Since `data-ax-show` toggles an element's visibility based on the truthiness of the evaluated expression, any error during evaluation — such as accessing a property on `null`/`undefined`, calling an undeclared method, or a malformed expression — prevents the renderer from determining whether the element should be shown or hidden.
+
+This typically happens for a few common reasons:
+
+- The bound expression accesses a nested property on a value that is `null` or `undefined` (e.g. `state.user.isActive` when `state.user` hasn't loaded yet).
+- A method referenced in the expression was never declared in `actions` or `computed`.
+- Asynchronous data the condition depends on hasn't resolved yet.
+- A typo or syntax error in the expression itself.
+
+**Resolution:** To resolve this warning:
+
+1. Ensure any object referenced in the expression is initialized before `data-ax-show` evaluates, even if just as an empty object or `null` with a guarded check.
+2. Guard nested property access with optional chaining or an explicit check, e.g. `state.user && state.user.isActive`.
+3. If the condition depends on asynchronous data, default it to `false` until the data has loaded so the element stays hidden safely.
+4. Move complex conditions into a `computed` property, where the logic is easier to guard and test.
+
+**Incorrect**
+
+```javascript
+const state = {};
+```
+
+```html
+<div data-ax-show="state.user.isActive">Welcome back!</div>
+```
+
+Since `state.user` is `undefined`, accessing `.isActive` throws, and the directive fails to evaluate.
+
+**Correct**
+
+```javascript
+const state = {
+  user: null
+};
+```
+
+```html
+<div data-ax-show="state.user && state.user.isActive">Welcome back!</div>
+```
+
+**Defensive Example**
+
+```javascript
+const computed = {
+  isUserActive() {
+    return Boolean(state.user && state.user.isActive);
+  }
+};
+```
+
+```html
+<div data-ax-show="computed.isUserActive">Welcome back!</div>
+```
+
+Deriving the condition through a guarded `computed` property ensures `data-ax-show` always receives a safe boolean and prevents evaluation failures.
+
+
 ## Compiler Warnings
 
 ### Undeclared Variable or Method Warning
