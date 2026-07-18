@@ -7,6 +7,7 @@ import { exec } from 'child_process';
 import { fileURLToPath } from 'url';
 import AvenxCompiler from '../lib/compiler.js';
 import loadConfig from '../lib/config.js';
+import { loadEnv } from '../lib/env.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -60,6 +61,7 @@ class AvenxCLI {
    */
   constructor(options = {}) {
     this.baseDir = options.baseDir || findProjectRoot(process.cwd());
+    loadEnv(this.baseDir);
     this.frameworkDir = path.join(__dirname, '..');
     this.config = { ...loadConfig(this.baseDir), ...options };
   }
@@ -171,16 +173,17 @@ class AvenxCLI {
       case 'lint':
         this.checkProject(args);
         break;
-      case 'serve':{
-        const portIdx = args.findIndex(a => a === '--port' || a === '-p');
-        const hostIdx = args.findIndex(a => a === '--host' || a === '-h');
-        
-        const port = portIdx !== -1 && args[portIdx + 1] 
-          ? parseInt(args[portIdx + 1], 10) 
-          : (!args[0]?.startsWith('-') && args[0]) || process.env.PORT || this.config.server.port || 3000;
-          
+      case 'serve': {
+        const portIdx = args.findIndex((a) => a === '--port' || a === '-p');
+        const hostIdx = args.findIndex((a) => a === '--host' || a === '-h');
+
+        const port =
+          portIdx !== -1 && args[portIdx + 1]
+            ? parseInt(args[portIdx + 1], 10)
+            : (!args[0]?.startsWith('-') && args[0]) || process.env.PORT || this.config.server.port || 3000;
+
         const host = hostIdx !== -1 && args[hostIdx + 1] ? args[hostIdx + 1] : 'localhost';
-        
+
         this.serveProject(port, host);
         break;
       }
@@ -258,7 +261,11 @@ class AvenxCLI {
     // Create initial package.json
     const packageJsonPath = path.join(this.baseDir, 'package.json');
     if (!fs.existsSync(packageJsonPath)) {
-      const projectName = path.basename(this.baseDir).toLowerCase().replace(/[^a-z0-9-_]/g, '') || 'avenx-app';
+      const projectName =
+        path
+          .basename(this.baseDir)
+          .toLowerCase()
+          .replace(/[^a-z0-9-_]/g, '') || 'avenx-app';
       const packageContent = {
         name: projectName,
         version: '1.0.0',
@@ -521,27 +528,24 @@ class AvenxCLI {
     // Remove import statements (handle single or double quotes, and optional trailing semicolon or carriage return)
     const importRegex = new RegExp(
       `^import\\s+(?:${className}|\\{\\s*${className}\\s*\\})\\s+from\\s+['"].*?${folderName}.*?['"];?\\r?\\n?`,
-      'm'
+      'm',
     );
     const generalImportRegex = new RegExp(
       `^import\\s+(?:${className}|\\{\\s*${className}\\s*\\})\\s+from\\s+['"].*?['"];?\\r?\\n?`,
-      'm'
+      'm',
     );
 
     // Remove app.register calls
     const registerRegex = new RegExp(
       `^\\s*app\\.register\\(\\s*['"]${className}['"]\\s*,\\s*${className}\\s*\\);?\\r?\\n?`,
-      'm'
+      'm',
     );
 
     // Remove app.mount calls and their commented versions
-    const mountRegex = new RegExp(
-      `^\\s*(?://\\s*)?app\\.mount\\(\\s*['"]${className}['"]\\s*\\);?\\r?\\n?`,
-      'm'
-    );
+    const mountRegex = new RegExp(`^\\s*(?://\\s*)?app\\.mount\\(\\s*['"]${className}['"]\\s*\\);?\\r?\\n?`, 'm');
     const commentedMountRegex = new RegExp(
       `^\\s*(?://\\s*)?app\\.mount\\(\\s*['"]${className}['"]\\s*\\);?\\s*//\\s*Uncomment\\s+to\\s+mount\\s+this\\s+component\\r?\\n?`,
-      'm'
+      'm',
     );
 
     let newContent = content
@@ -590,7 +594,9 @@ class AvenxCLI {
       console.log(`  ${this.config.srcDir}/components/${lowerName}/${lowerName}.component.js`);
       console.log(`  ${this.config.srcDir}/components/${lowerName}/${lowerName}.component.css`);
       console.log(`  ${this.config.srcDir}/components/${lowerName}/`);
-      console.log(`🧪 [Dry Run] ${this.config.srcDir}/main.app.js would be updated to remove registrations/imports for '${capitalizedName}'.`);
+      console.log(
+        `🧪 [Dry Run] ${this.config.srcDir}/main.app.js would be updated to remove registrations/imports for '${capitalizedName}'.`,
+      );
       console.log('🧪 [Dry Run] No files were deleted or modified.');
       return;
     }
@@ -625,7 +631,9 @@ class AvenxCLI {
       console.log(`🧪 [Dry Run] Page '${lowerName}' files would be deleted:`);
       console.log(`  ${this.config.srcDir}/pages/${lowerName}.page.js`);
       console.log(`  ${this.config.srcDir}/pages/${lowerName}.page.css`);
-      console.log(`🧪 [Dry Run] ${this.config.srcDir}/main.app.js would be updated to remove imports/registrations/routes for '${capitalizedName}'.`);
+      console.log(
+        `🧪 [Dry Run] ${this.config.srcDir}/main.app.js would be updated to remove imports/registrations/routes for '${capitalizedName}'.`,
+      );
       console.log('🧪 [Dry Run] No files were deleted or modified.');
       return;
     }
@@ -670,7 +678,9 @@ class AvenxCLI {
     if (dryRun) {
       console.log(`🧪 [Dry Run] Bridge '${capitalizedName}' file would be deleted:`);
       console.log(`  ${this.config.srcDir}/global/${lowerName}.bridge.js`);
-      console.log(`🧪 [Dry Run] ${this.config.srcDir}/main.app.js would be updated to remove imports/registrations for '${capitalizedName}'.`);
+      console.log(
+        `🧪 [Dry Run] ${this.config.srcDir}/main.app.js would be updated to remove imports/registrations for '${capitalizedName}'.`,
+      );
       console.log('🧪 [Dry Run] No files were deleted or modified.');
       return;
     }
@@ -704,7 +714,9 @@ class AvenxCLI {
     if (dryRun) {
       console.log(`🧪 [Dry Run] Guard '${capitalizedName}' file would be deleted:`);
       console.log(`  ${this.config.srcDir}/guards/${lowerName}.guard.js`);
-      console.log(`🧪 [Dry Run] ${this.config.srcDir}/main.app.js would be updated to remove imports/registrations for '${capitalizedName}'.`);
+      console.log(
+        `🧪 [Dry Run] ${this.config.srcDir}/main.app.js would be updated to remove imports/registrations for '${capitalizedName}'.`,
+      );
       console.log('🧪 [Dry Run] No files were deleted or modified.');
       return;
     }
