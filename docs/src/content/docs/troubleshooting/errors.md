@@ -116,6 +116,87 @@ This typically happens for a few common reasons:
 
 This validation exists purely to help catch mistakes early — it will not prevent your app from compiling or running, but an undeclared reference will typically resolve to `undefined` at runtime, so it's best to address the warning rather than ignore it.
 
+### AVX_W01 — COMPILER_BUNDLE_SIZE_EXCEEDED
+
+**Warning Message**
+
+```text
+WARNING: {0} exceeds {1} KB ({2} KB)
+```
+
+**Cause:** This warning is emitted during the bundling phase when a compiled JavaScript chunk or CSS asset exceeds the configured bundle size budget. Avenx-JS compares the final output size of generated assets against the thresholds defined in `avenx.config.json`. Exceeding these limits does not stop the build, but it indicates that the generated bundle may negatively affect application performance, particularly initial page load times.
+
+This typically happens for a few common reasons:
+
+- Large third-party dependencies are included in the application bundle.
+- Unused code or assets are bundled unnecessarily.
+- Large images, fonts, or stylesheets are imported directly into the application.
+- Bundle size limits are configured too aggressively for the project's requirements.
+
+**Resolution:** To resolve this warning:
+
+1. Review the generated bundle and identify unusually large JavaScript or CSS assets.
+2. Split large features into smaller modules and load them only when needed.
+3. Remove unused dependencies and assets from the project.
+4. Adjust the configured bundle size budgets if the application's expected size legitimately exceeds the default limits.
+
+**Configure Bundle Budgets**
+
+```json
+{
+  "build": {
+    "bundleBudget": {
+      "javascript": 500,
+      "css": 100
+    }
+  }
+}
+```
+
+The values represent the maximum allowed bundle size (in KB) before Avenx-JS emits a warning.
+
+**Optimization Tips**
+
+- Use lazy-loading for large pages or feature modules.
+- Remove unused dependencies and imports.
+- Optimize images and other static assets before bundling.
+- Split large components into smaller, reusable modules.
+- Avoid including development-only libraries in production builds.
+
+**Incorrect**
+
+```javascript
+import ChartLibrary from "very-large-chart-library";
+import "./large-theme.css";
+```
+
+Bundling large dependencies and styles without considering their impact can easily cause bundle size budgets to be exceeded.
+
+**Correct**
+
+```javascript
+async function loadCharts() {
+  const { default: ChartLibrary } = await import("very-large-chart-library");
+}
+```
+
+Loading large features only when they are required helps reduce the application's initial bundle size.
+
+**Defensive Example**
+
+```json
+{
+  "build": {
+    "bundleBudget": {
+      "javascript": 750,
+      "css": 150
+    }
+  }
+}
+```
+
+Adjust bundle budgets only when larger assets are expected. Increasing the limits should complement optimization efforts, not replace them.
+
 ### AVX_W03 — COMPILER_UNDECLARED_REFERENCE
 
 **Warning Message**
