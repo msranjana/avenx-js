@@ -232,6 +232,75 @@ const pageProps = {
 
 Wrapping the resolver and falling back to a safe default ensures the page can still mount even if the expected route data is missing, rather than failing the prop evaluation entirely.
 
+### AVX_W13 — PAGE_COMPONENT_NOT_REGISTERED
+
+**Warning Message**
+
+```
+Component "{0}" not found in registry.
+```
+
+**Cause:** This warning is emitted when the router attempts to mount a page whose registered component cannot be found in the application's page registry. Before a page can be mounted, it must first be imported and registered with the `AvenxApp` instance. If the router resolves a page name that has never been registered, Avenx-JS cannot create the page and emits this warning.
+
+This typically happens for a few common reasons:
+
+- The page component was never imported.
+- The page was imported but not registered using `app.registerPage()`.
+- The registration name does not match the name used when mounting or routing.
+- The page registration occurs after routing has already started.
+
+**Resolution:** To resolve this warning:
+
+1. Ensure the page component is imported into your application's entry file.
+2. Register the page with `app.registerPage()` before any routing or page mounting occurs.
+3. Verify that the registration name exactly matches the name referenced by your routes or `app.mountPage()`.
+4. Keep all page registrations together during application initialization so the router has access to every page before navigation begins.
+
+**Incorrect**
+
+```javascript
+import { AvenxApp } from 'avenx-core/runtime';
+import Home from './pages/home.page.js';
+
+const app = new AvenxApp({ target: '#app' });
+
+app.mountPage('Home');
+```
+
+Since the page was never registered, Avenx-JS cannot locate the component in the page registry.
+
+**Correct**
+
+```javascript
+import { AvenxApp } from 'avenx-core/runtime';
+import Home from './pages/home.page.js';
+
+const app = new AvenxApp({ target: '#app' });
+
+app.registerPage('Home', Home);
+app.mountPage('Home');
+```
+
+Registering the page before mounting ensures the router can resolve the requested component successfully.
+
+**Defensive Example**
+
+```javascript
+import { AvenxApp } from 'avenx-core/runtime';
+
+import Home from './pages/home.page.js';
+import Profile from './pages/profile.page.js';
+
+const app = new AvenxApp({ target: '#app' });
+
+app.registerPage('Home', Home);
+app.registerPage('Profile', Profile);
+
+app.mountPage('Home');
+```
+
+Registering all pages during application startup helps ensure every routed page is available before navigation begins.
+
 ### AVX_W14 — COMPONENT_RESTORE_SLOT_CONTENT_FAILED
 
 **Warning Message**
