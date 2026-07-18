@@ -589,6 +589,38 @@ function testMapAndSetReactivity() {
   console.log('  ✅ Set and Map reactivity tests passed!');
 }
 
+/**
+ * Tests that reactivity optimization symbols do not leak in standard iteration structures.
+ */
+function testReactivityEncapsulation() {
+  console.log('🧪 Testing proxy reference encapsulation...');
+
+  const rawObj = { a: 1, b: { c: 2 } };
+  const state = new StateFactory().create(rawObj);
+
+  // Trigger proxy creation for nested object
+  const b = state.b;
+
+  const rawInner = rawObj.b;
+
+  // 1. Symbol should not leak in Object.keys
+  const keys = Object.keys(rawInner);
+  assert.deepStrictEqual(keys, ['c']);
+
+  // 2. Symbol should not leak in for...in
+  const forInKeys = [];
+  for (const k in rawInner) {
+    forInKeys.push(k);
+  }
+  assert.deepStrictEqual(forInKeys, ['c']);
+
+  // 3. Symbol should not leak in JSON.stringify
+  const json = JSON.stringify(rawInner);
+  assert.strictEqual(json, '{"c":2}');
+
+  console.log('  ✅ Proxy reference encapsulation tests passed!');
+}
+
 (async () => {
   try {
     testIsReactiveTarget();
@@ -602,6 +634,7 @@ function testMapAndSetReactivity() {
     testDoubleWrappingPrevention();
     testBridgeConstructorFailure();
     testMapAndSetReactivity();
+    testReactivityEncapsulation();
     console.log('✅ All reactivity tests passed!');
   } catch (error) {
     console.error('❌ Reactivity tests failed!');
