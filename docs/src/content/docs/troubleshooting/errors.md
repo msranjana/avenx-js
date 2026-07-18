@@ -1002,7 +1002,9 @@ const state = {
 ```
 
 When rendered, the sanitizer strips the `<script>` tag and logs:
+```text
 [Avenx Validation Warning] Sanitized tag "<script>" when stripping content.
+```
 
 The safe portion of the markup (`<p>Hello!</p>`) still renders normally.
 
