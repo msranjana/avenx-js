@@ -243,6 +243,133 @@ The loop block is properly opened and closed, allowing the compiler to parse the
 
 When nesting loop blocks, always close the innermost loop before closing the outer loop. Proper nesting helps the compiler validate the template structure correctly.
 
+### AVX_W05 — COMPILER_TRANSITION_PARSE_FAILED
+
+**Warning Message**
+Failed to parse transition tags: {0}
+
+**Cause:** This warning is emitted at compile time when Avenx-JS extracts and parses transition wrapper attributes (used to animate elements entering/leaving the DOM) but the parser fails to read the class configuration or duration parameters correctly. This typically happens when the transition attribute's value doesn't match the format the compiler expects — for example, an invalid duration value, malformed class name syntax, or a missing required parameter.
+
+**Expected Format**
+
+A transition block is typically declared with an attribute such as `data-ax-transition`, taking a configuration string with named class and duration parameters:
+
+```html
+<div data-ax-transition="name: fade; duration: 300">
+  Content
+</div>
+```
+
+- `name` — a string identifying the transition, used to derive the CSS class names applied during enter/leave (e.g. `fade-enter`, `fade-leave`).
+- `duration` — a numeric value in milliseconds specifying how long the transition classes remain applied before being removed.
+
+This typically fails for a few common reasons:
+
+- The `duration` value is not a valid number (e.g. `duration: 300ms` instead of `duration: 300`).
+- The configuration string is missing a required `;` separator between parameters.
+- The `name` value contains characters that can't be safely used to construct CSS class names (spaces, quotes, or special characters).
+- A parameter key is misspelled (e.g. `duraton` instead of `duration`).
+
+**Resolution:** To resolve this warning:
+
+1. Ensure `duration` is specified as a plain number representing milliseconds, without units.
+2. Separate multiple parameters with a semicolon (`;`), matching the `key: value; key: value` format.
+3. Keep `name` limited to characters valid in CSS class names (letters, numbers, hyphens, underscores).
+4. Double-check parameter key spelling against the supported keys (`name`, `duration`).
+
+**Incorrect**
+
+```html
+<div data-ax-transition="name: fade, duration: 300ms">
+  Content
+</div>
+```
+
+This fails because a comma is used instead of a semicolon between parameters, and `duration` includes the `ms` unit instead of a plain number.
+
+**Correct**
+
+```html
+<div data-ax-transition="name: fade; duration: 300">
+  Content
+</div>
+```
+
+This produces `fade-enter`/`fade-leave` classes applied for 300 milliseconds during the respective transition phase.
+
+**Specifying Transition Classes and Durations**
+
+You can also override the generated class names directly instead of relying on the `name`-derived defaults:
+
+```html
+<div data-ax-transition="enterClass: slide-in; leaveClass: slide-out; duration: 250">
+  Content
+</div>
+```
+
+- `enterClass` — the CSS class applied while the element is entering.
+- `leaveClass` — the CSS class applied while the element is leaving.
+- `duration` — shared duration in milliseconds for both phases, unless overridden separately with `enterDuration`/`leaveDuration`.
+
+Ensuring these parameters follow the expected `key: value` pairs, separated by semicolons, with numeric-only duration values, allows the compiler to parse the transition block successfully.
+
+### AVX_W06 — COMPILER_STATIC_SUBTREE_OPTIMIZATION_FAILED
+
+**Warning Message**
+Failed to optimize static subtrees: {0}
+
+**Cause:** As part of its build-time optimizations, the Avenx-JS compiler analyzes each component's element tree to identify **static subtrees** — sections of markup that contain no dynamic bindings, interpolations, or directives, and therefore never change after the initial render. Marking these subtrees as static lets the runtime skip re-evaluating and re-diffing them on every update, improving render performance. This warning is emitted when the compiler attempts this analysis but fails, typically because it encounters a malformed tree node or a parser error while walking the template.
+
+This typically happens for a few common reasons:
+
+- Unclosed or mismatched HTML tags within a section the compiler is trying to statically analyze.
+- Templates that mix static and dynamic content in ways that produce an inconsistent or invalid node structure (e.g. a directive attribute left incomplete or malformed).
+- Deeply nested or unusually structured markup that the tree walker cannot resolve cleanly during the optimization pass.
+- Custom or non-standard elements/attributes that the compiler's static analyzer doesn't recognize and cannot safely classify as static or dynamic.
+
+**Impact:** This is a build-time optimization warning, not a runtime error — it does not stop compilation or break your app's functionality. However, when a subtree fails static optimization, the runtime is forced to treat it as dynamic and re-evaluate it on every update, which can measurably impact rendering performance in larger or frequently-updating components.
+
+**Resolution:** To resolve this warning:
+
+1. Verify that all HTML tags in the affected template are properly closed and correctly nested.
+2. Check that directive attributes (`data-ax-*`) and interpolations (`{{ }}`) are complete and well-formed — an incomplete directive can confuse the tree walker.
+3. Simplify unusually deep or complex nesting where possible, particularly in sections you intend to be purely static.
+4. If you're using custom elements, ensure they follow standard HTML structure so the compiler can correctly classify their contents.
+
+**Incorrect**
+
+```html
+<div class="card">
+  <p>Static header text</p>
+  <span>Unclosed span
+  <p>More static text</p>
+</div>
+```
+
+The unclosed `<span>` produces a malformed node structure, so the compiler cannot reliably determine which parts of this subtree are static.
+
+**Correct**
+
+```html
+<div class="card">
+  <p>Static header text</p>
+  <span>Properly closed span</span>
+  <p>More static text</p>
+</div>
+```
+
+With well-formed markup, the compiler can confidently identify this entire subtree as static (since it contains no bindings or directives) and optimize it accordingly.
+
+**Subtree Evaluation Requirements**
+
+For a subtree to qualify as static and be successfully optimized, it must:
+
+- Contain no interpolations (`{{ }}`), directive bindings (`data-ax-*`), or event handlers.
+- Be well-formed HTML with properly closed and nested tags.
+- Not contain `<@for>` or other structural directives that produce dynamic output.
+
+Subtrees that meet these requirements are hoisted out of the render function and reused across updates without re-evaluation, improving performance for components with large amounts of unchanging markup.
+
 ### AVX_W08 — ROUTE_PATH_MISSING_LEADING_SLASH
 
 **Warning Message**
