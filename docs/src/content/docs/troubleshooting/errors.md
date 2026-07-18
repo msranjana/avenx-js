@@ -580,6 +580,67 @@ const routes = [
 
 Normalizing route paths before registration helps prevent configuration mistakes and ensures all routes follow the expected format.
 
+### AVX_W10 — ROUTE_NOT_FOUND
+
+**Warning Message**
+
+```text
+No route defined for hash: {0}
+```
+
+**Cause:** This warning is emitted when the router detects a hash-based navigation request that does not match any registered route in the application's routing table. Since no matching page can be resolved, Avenx-JS cannot complete the navigation and emits this warning.
+
+This typically happens for a few common reasons:
+
+- Navigating to a URL hash that has no corresponding route.
+- A typo in the route path or hash.
+- The route was removed or renamed but existing links still reference it.
+- A fallback or wildcard route has not been configured.
+
+**Resolution:** To resolve this warning:
+
+1. Verify that the requested hash matches a registered route.
+2. Update any broken links or navigation code that references outdated route paths.
+3. Define a fallback or wildcard route to handle unknown URLs gracefully.
+4. Redirect unmatched routes to a dedicated 404 page instead of leaving the application in an undefined state.
+
+**Incorrect**
+
+```javascript
+const router = new AvenxRouter();
+
+router.add('/home', HomePage);
+
+// User navigates to:
+// #/profile
+```
+
+Since `/profile` is not registered, the router emits **AVX_W10** because no matching route exists.
+
+**Correct**
+
+```javascript
+const router = new AvenxRouter();
+
+router.add('/home', HomePage);
+router.add('/profile', ProfilePage);
+```
+
+Registering every navigable route ensures hash navigation can resolve successfully.
+
+**Defensive Example**
+
+```javascript
+const router = new AvenxRouter();
+
+router.add('/home', HomePage);
+router.add('/profile', ProfilePage);
+
+router.add('*', NotFoundPage);
+```
+
+Using a wildcard (fallback) route allows unknown hashes to be redirected to a dedicated 404 page instead of producing an unresolved navigation.
+
 ### AVX_W11 — ROUTE_TITLE_EVALUATION_FAILED
 
 **Warning Message**
