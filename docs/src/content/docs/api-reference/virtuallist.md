@@ -1,4 +1,7 @@
-# <VirtualList>
+---
+title: 'VirtualList'
+description: 'Full API reference for the built-in VirtualList component.'
+---
 
 The `<VirtualList>` component is a built-in, globally available component designed for high-performance virtualized list rendering of massive datasets. It automatically handles dynamic element recycling, layout paddings, and dynamic item height updates.
 
