@@ -1,5 +1,4 @@
 import assert from 'assert';
-import path from 'path';
 import StyleProcessor, { encodeVLQ, encodeMapping } from '../../lib/compiler/StyleProcessor.js';
 
 function testVlqEncoding() {

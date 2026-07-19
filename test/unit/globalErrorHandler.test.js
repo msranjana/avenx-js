@@ -4,7 +4,7 @@ import { AvenxComponent } from '../../lib/core/runtime/AvenxComponent.js';
 import { MockDOMElement, setupDOMMock, teardownDOMMock } from '../helpers/dom-mock.js';
 
 let errorsHandled = [];
-let originalConsoleError = console.error;
+const originalConsoleError = console.error;
 
 function hookConsoleError() {
   console.error = () => {};
