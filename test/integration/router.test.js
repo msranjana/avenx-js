@@ -407,6 +407,93 @@ import { AvenxPage } from '../../lib/core/runtime/AvenxPage.js';
       'Should log a default timeout error with code AVX_R14',
     );
 
+    // 13. Custom Control Objects (Cancellation and Redirects)
+    if (app.router) {
+      app.router.destroy();
+    }
+
+    mountedPageName = null;
+    mountedParams = null;
+
+    let guardReturnVal = null;
+    class CustomControlGuard extends AvenxGuard {
+      canActivate() {
+        return guardReturnVal;
+      }
+    }
+
+    app.initRouter({
+      '#/home': 'TestPage',
+      '#/guarded-cancel': {
+        page: 'TestPage',
+        guards: [CustomControlGuard],
+      },
+      '#/guarded-redirect': {
+        page: 'TestPage',
+        guards: [CustomControlGuard],
+      },
+      '#/login': 'TestPage',
+    });
+
+    // Test A: Silent cancel
+    window.location.hash = '#/home';
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    assert.strictEqual(app.router.currentRoute.hash, '#/home');
+
+    let consoleWarnMsg = null;
+    const originalConsoleWarn = console.warn;
+    console.warn = (msg) => {
+      consoleWarnMsg = msg;
+    };
+
+    guardReturnVal = { cancel: true, silent: true };
+    window.location.hash = '#/guarded-cancel';
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    console.warn = originalConsoleWarn;
+
+    assert.strictEqual(window.location.hash, '#/home', 'Hash should revert to #/home');
+    assert.strictEqual(app.router.currentRoute.hash, '#/home');
+    assert.strictEqual(mountedPageName, null, 'Page should not mount');
+    assert.strictEqual(consoleWarnMsg, null, 'Warning should not be triggered');
+
+    // Test B: Warning cancel
+    mountedPageName = null;
+    consoleWarnMsg = null;
+    console.warn = (msg) => {
+      consoleWarnMsg = msg;
+    };
+
+    guardReturnVal = { cancel: true, silent: false };
+    window.location.hash = '#/guarded-cancel';
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    console.warn = originalConsoleWarn;
+
+    assert.strictEqual(window.location.hash, '#/home', 'Hash should revert to #/home');
+    assert.strictEqual(app.router.currentRoute.hash, '#/home');
+    assert.strictEqual(mountedPageName, null, 'Page should not mount');
+    assert.ok(consoleWarnMsg && consoleWarnMsg.includes('AVX_R06'), 'Warning should be triggered');
+
+    // Test C: Redirect with query/state
+    mountedPageName = null;
+    guardReturnVal = { redirect: '#/login', state: { reason: 'expired', code: 401 } };
+    window.location.hash = '#/guarded-redirect';
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    assert.strictEqual(window.location.hash, '#/login?reason=expired&code=401', 'Should redirect with state fields as query parameters');
+    assert.strictEqual(app.router.currentRoute.hash, '#/login?reason=expired&code=401');
+    assert.strictEqual(mountedPageName, 'TestPage');
+    assert.deepStrictEqual(mountedParams.query, { reason: 'expired', code: 401 });
+
+    // Test D: Redirect with query parameter merge
+    mountedPageName = null;
+    guardReturnVal = { redirect: '#/login?existing=1', query: { extra: 'true' } };
+    window.location.hash = '#/guarded-redirect';
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    assert.strictEqual(window.location.hash, '#/login?existing=1&extra=true', 'Should merge query parameters correctly');
+
     console.log('  ✅ Router and Guards tests passed!');
   } catch (error) {
     console.error('❌ Router and Guards tests failed!');
