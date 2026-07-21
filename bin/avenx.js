@@ -871,6 +871,11 @@ class AvenxCLI {
         });
         return;
       }
+      if (req.url === '/__avenx-inspect') {
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(this.getInspectorHtml());
+        return;
+      }
 
       let filePath = path.join(this.baseDir, req.url === '/' ? 'index.html' : req.url);
 
@@ -1001,6 +1006,23 @@ class AvenxCLI {
 <body>
     <div id="app"></div>
     <script src="${this.config.distDir}/bundle.js"></script>
+</body>
+</html>`;
+  }
+
+  /**
+   * Generates the Dev Server Inspection Dashboard HTML page.
+   * @returns {string} The dashboard HTML content.
+   */
+  getInspectorHtml() {
+    return `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Avenx Inspection Dashboard</title>
+</head>
+<body>
+    <h1>Avenx Dev Server Dashboard</h1>
 </body>
 </html>`;
   }
