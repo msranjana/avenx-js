@@ -354,7 +354,7 @@ class AvenxCLI {
       layoutTemplate = layoutInput === '2' ? 'routing' : 'blank';
     }
 
-    console.log('🚀 Initializing new Avenx-JS project...');
+    console.log(`🚀 Initializing new Avenx-JS project (Style: ${stylePreprocessor}, Layout: ${layoutTemplate})...`);
 
     // Write avenx.config.json if preprocessor option is configured
     const configPath = path.join(this.baseDir, 'avenx.config.json');
