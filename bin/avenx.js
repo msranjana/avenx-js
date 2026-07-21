@@ -1336,7 +1336,125 @@ class AvenxCLI {
 
     <script>
         window.__avenx_config = ${configJson};
-        /* Placeholder for scripts */
+        
+        const channel = new BroadcastChannel('avenx-inspector-channel');
+        let lastUpdate = 0;
+
+        function updateStatus(connected) {
+            const badge = document.getElementById('statusBadge');
+            if (connected) {
+                badge.textContent = 'Live';
+                badge.className = 'badge connected';
+            } else {
+                badge.textContent = 'Disconnected';
+                badge.className = 'badge disconnected';
+            }
+        }
+
+        channel.onmessage = (event) => {
+            if (event.data && event.data.type === 'inspect-data') {
+                updateStatus(true);
+                lastUpdate = Date.now();
+                renderDashboard(event.data.data);
+            }
+        };
+
+        // Render server config immediately
+        const config = window.__avenx_config || {};
+        document.getElementById('confPort').textContent = config.server?.port || '3000';
+        document.getElementById('confHost').textContent = config.server?.host || 'localhost';
+        document.getElementById('confSrc').textContent = config.srcDir || 'src';
+        document.getElementById('confDist').textContent = config.distDir || 'dist';
+
+        // Request data periodically to establish connection
+        function requestUpdate() {
+            channel.postMessage('request-inspect-data');
+            // If no message received for 2.5 seconds, show disconnected
+            if (Date.now() - lastUpdate > 2500) {
+                updateStatus(false);
+            }
+        }
+
+        setInterval(requestUpdate, 1000);
+        requestUpdate();
+
+        function renderDashboard(data) {
+            // 1. Render routes
+            const routingList = document.getElementById('routingList');
+            routingList.innerHTML = '';
+            if (data.routes && Object.keys(data.routes).length > 0) {
+                Object.entries(data.routes).forEach(([pattern, def]) => {
+                    const pageName = typeof def === 'string' ? def : def.page;
+                    const item = document.createElement('div');
+                    item.className = 'info-item';
+                    item.innerHTML = \`
+                        <div class="info-header">
+                            <span class="route-path">\${pattern}</span>
+                            <span class="route-page">\${pageName}</span>
+                        </div>
+                    \`;
+                    routingList.appendChild(item);
+                });
+            } else {
+                routingList.innerHTML = '<div class="text-muted" style="font-size:0.85rem;color:var(--text-muted);">No routes configured.</div>';
+            }
+
+            // 2. Render current route
+            const currentRouteInfo = document.getElementById('currentRouteInfo');
+            if (data.currentRoute) {
+                currentRouteInfo.innerHTML = \`
+                    <div style="margin-bottom:0.25rem;"><strong>Hash:</strong> <span style="color:var(--accent-cyan);">\${data.currentRoute.hash}</span></div>
+                    <div style="margin-bottom:0.25rem;"><strong>Page:</strong> \${data.currentRoute.page}</div>
+                    <div style="margin-top:0.5rem;"><strong>Params:</strong></div>
+                    <pre class="state-explorer">\${JSON.stringify(data.currentRoute.params || {}, null, 2)}</pre>
+                \`;
+            } else {
+                currentRouteInfo.innerHTML = '<div style="color:var(--text-muted);">None (App not routing or on initial load)</div>';
+            }
+
+            // 3. Render active components
+            const componentsList = document.getElementById('componentsList');
+            componentsList.innerHTML = '';
+            if (data.activeComponents && data.activeComponents.length > 0) {
+                data.activeComponents.forEach((comp) => {
+                    const item = document.createElement('div');
+                    item.className = 'info-item';
+                    item.innerHTML = \`
+                        <div class="info-header">
+                            <span class="comp-name">\${comp.name}</span>
+                        </div>
+                        <div class="comp-details">
+                            <div style="margin-top:0.25rem;"><strong>Props:</strong></div>
+                            <pre class="state-explorer">\${JSON.stringify(comp.props, null, 2)}</pre>
+                            <div style="margin-top:0.5rem;"><strong>State:</strong></div>
+                            <pre class="state-explorer">\${JSON.stringify(comp.state, null, 2)}</pre>
+                        </div>
+                    \`;
+                    componentsList.appendChild(item);
+                });
+            } else {
+                componentsList.innerHTML = '<div class="text-muted" style="font-size:0.85rem;color:var(--text-muted);">No active components in DOM.</div>';
+            }
+
+            // 4. Render bridges
+            const bridgesList = document.getElementById('bridgesList');
+            bridgesList.innerHTML = '';
+            if (data.registeredBridges && Object.keys(data.registeredBridges).length > 0) {
+                Object.entries(data.registeredBridges).forEach(([name, state]) => {
+                    const item = document.createElement('div');
+                    item.className = 'info-item';
+                    item.innerHTML = \`
+                        <div class="info-header">
+                            <span class="bridge-header">\${name}</span>
+                        </div>
+                        <pre class="state-explorer">\${JSON.stringify(state, null, 2)}</pre>
+                    \`;
+                    bridgesList.appendChild(item);
+                });
+            } else {
+                bridgesList.innerHTML = '<div class="text-muted" style="font-size:0.85rem;color:var(--text-muted);">No bridges registered.</div>';
+            }
+        }
     </script>
 </body>
 </html>`;
