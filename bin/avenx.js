@@ -1488,6 +1488,7 @@ class AvenxCLI {
 
 \x1b[1;36mOptions:\x1b[0m
   \x1b[32m--dry-run, -d\x1b[0m             \x1b[90mPreview actions without writing or deleting any files\x1b[0m
+  \x1b[32m--version, -v\x1b[0m            \x1b[90mOutput the current version\x1b[0m
     `);
   }
 }
