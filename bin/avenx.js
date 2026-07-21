@@ -313,10 +313,13 @@ class AvenxCLI {
    */
   async initProject(args = []) {
     const isInteractive =
-      process.stdin.isTTY &&
-      process.stdout.isTTY &&
-      !args.includes('-y') &&
-      !args.includes('--yes');
+      (process.stdin.isTTY &&
+        process.stdout.isTTY &&
+        !args.includes('-y') &&
+        !args.includes('--yes')) ||
+      args.includes('--interactive') ||
+      args.includes('-i') ||
+      process.env.AVENX_FORCE_INTERACTIVE === 'true';
 
     let stylePreprocessor = 'none';
     let layoutTemplate = 'blank';
