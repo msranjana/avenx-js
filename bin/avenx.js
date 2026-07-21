@@ -314,10 +314,7 @@ class AvenxCLI {
    */
   async initProject(args = []) {
     const isInteractive =
-      (process.stdin.isTTY &&
-        process.stdout.isTTY &&
-        !args.includes('-y') &&
-        !args.includes('--yes')) ||
+      (process.stdin.isTTY && process.stdout.isTTY && !args.includes('-y') && !args.includes('--yes')) ||
       args.includes('--interactive') ||
       args.includes('-i') ||
       process.env.AVENX_FORCE_INTERACTIVE === 'true';
@@ -340,10 +337,10 @@ class AvenxCLI {
       );
 
       const mapping = {
-        '1': 'none',
-        '2': 'sass',
-        '3': 'less',
-        '4': 'postcss',
+        1: 'none',
+        2: 'sass',
+        3: 'less',
+        4: 'postcss',
       };
       stylePreprocessor = mapping[preprocessorInput];
 
@@ -421,11 +418,11 @@ class AvenxCLI {
             "import Navbar from './components/navbar/navbar.component.js';\n\n" +
             "const app = new AvenxApp({ target: '#app' });\n\n" +
             "app.register('Navbar', Navbar);\n\n" +
-            "app.initRouter({\n" +
+            'app.initRouter({\n' +
             "  '': 'Home',\n" +
             "  '#/': 'Home',\n" +
             "  '#/about': 'About',\n" +
-            "});\n",
+            '});\n',
         );
       } else {
         fs.writeFileSync(
